@@ -1,0 +1,197 @@
+<div class="dashboard-container">
+  <!-- Loading Spinner -->
+  <div *ngIf="isLoading" class="spinner-overlay">
+    <div class="spinner-border text-primary" role="status">
+      <span class="visually-hidden">Loading...</span>
+    </div>
+  </div>
+
+  <!-- Dashboard Content -->
+  <div *ngIf="!isLoading && stats">
+    <!-- Stats Cards -->
+    <div class="row g-4 mb-4">
+      <div class="col-xl-3 col-md-6">
+        <div class="dashboard-card">
+          <div class="card-icon bg-primary bg-opacity-10 text-primary">
+            <i class="fas fa-book"></i>
+          </div>
+          <div class="card-value">{{ stats.totalBooks }}</div>
+          <p class="card-label">Total Books</p>
+          <small class="text-muted">{{ stats.availableBooks }} available</small>
+        </div>
+      </div>
+
+      <div class="col-xl-3 col-md-6">
+        <div class="dashboard-card">
+          <div class="card-icon bg-success bg-opacity-10 text-success">
+            <i class="fas fa-users"></i>
+          </div>
+          <div class="card-value">{{ stats.totalMembers }}</div>
+          <p class="card-label">Total Members</p>
+          <small class="text-muted">{{ stats.activeMembers }} active</small>
+        </div>
+      </div>
+
+      <div class="col-xl-3 col-md-6">
+        <div class="dashboard-card">
+          <div class="card-icon bg-warning bg-opacity-10 text-warning">
+            <i class="fas fa-exchange-alt"></i>
+          </div>
+          <div class="card-value">{{ stats.activeBorrows }}</div>
+          <p class="card-label">Active Borrows</p>
+          <small class="text-danger" *ngIf="stats.overdueBorrows > 0">
+            {{ stats.overdueBorrows }} overdue
+          </small>
+          <small class="text-muted" *ngIf="stats.overdueBorrows === 0">
+            No overdue items
+          </small>
+        </div>
+      </div>
+
+      <div class="col-xl-3 col-md-6">
+        <div class="dashboard-card">
+          <div class="card-icon bg-danger bg-opacity-10 text-danger">
+            <i class="fas fa-dollar-sign"></i>
+          </div>
+          <div class="card-value">${{ stats.outstandingFines | number:'1.2-2' }}</div>
+          <p class="card-label">Outstanding Fines</p>
+          <small class="text-muted">Total fines: ${{ stats.totalFines | number:'1.2-2' }}</small>
+        </div>
+      </div>
+    </div>
+
+    <!-- Charts Row -->
+    <div class="row g-4 mb-4">
+      <div class="col-xl-8">
+        <div class="card">
+          <div class="card-header">
+            <h5 class="mb-0">Borrow Trends (Last 7 Days)</h5>
+          </div>
+          <div class="card-body">
+            <div class="table-responsive">
+              <table class="table table-sm">
+                <thead>
+                  <tr>
+                    <th>Date</th>
+                    <th>Borrows</th>
+                    <th>Returns</th>
+                    <th>Net Change</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr *ngFor="let trend of borrowTrends">
+                    <td>{{ trend.date | date:'MMM d' }}</td>
+                    <td><span class="badge badge-info">{{ trend.borrows }}</span></td>
+                    <td><span class="badge badge-success">{{ trend.returns }}</span></td>
+                    <td>
+                      <span [class.text-success]="trend.netBorrows > 0" 
+                            [class.text-danger]="trend.netBorrows < 0"
+                            [class.text-muted]="trend.netBorrows === 0">
+                        {{ trend.netBorrows > 0 ? '+' : '' }}{{ trend.netBorrows }}
+                      </span>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-xl-4">
+        <div class="card">
+        <div class="card-header">
+            <h5 class="mb-0">Popular Books</h5>
+        </div>
+
+        <div class="card-body">
+            <div
+            *ngIf="popularBooks.length === 0"
+            class="text-center text-muted"
+            >
+            <i class="fas fa-book fa-2x mb-2"></i>
+            <p>No popular books data available</p>
+            </div>
+
+            <div
+            *ngFor="let book of popularBooks; let last = last"
+            class="popular-book-item"
+            >
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                <div class="fw-bold">
+                    {{ book.title }}
+                </div>
+
+                <small class="text-muted">
+                    {{ book.author }}
+                </small>
+                </div>
+
+                <div class="text-end">
+                <span class="badge bg-primary">
+                    {{ book.totalBorrows }} borrows
+                </span>
+                <br>
+
+                <small>
+                    Score: {{ book.popularityScore | number:'1.1-1' }}
+                </small>
+                </div>
+            </div>
+
+            <hr *ngIf="!last" class="my-2">
+            </div>
+        </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Quick Stats Row -->
+    <div class="row g-4">
+      <div class="col-md-6">
+        <div class="card">
+          <div class="card-header">
+            <h5 class="mb-0">Recent Activity</h5>
+          </div>
+          <div class="card-body">
+            <div class="d-flex justify-content-between">
+              <div>
+                <span class="badge bg-info me-2">{{ stats.totalBorrows }}</span>
+                Total Borrows
+              </div>
+              <div>
+                <span class="badge bg-warning me-2">{{ stats.activeReservations }}</span>
+                Active Reservations
+              </div>
+              <div>
+                <span class="badge bg-danger me-2">{{ stats.overdueBorrows }}</span>
+                Overdue
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-md-6">
+        <div class="card">
+          <div class="card-header">
+            <h5 class="mb-0">System Status</h5>
+          </div>
+          <div class="card-body">
+            <div class="d-flex justify-content-between">
+              <div>
+                <span class="badge bg-success me-2">●</span>
+                System Online
+              </div>
+              <div>
+                <span class="badge bg-info me-2">●</span>
+                {{ stats.reportDate | date:'medium' }}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
