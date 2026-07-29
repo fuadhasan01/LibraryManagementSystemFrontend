@@ -1,0 +1,61 @@
+<nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+  <div class="container-fluid">
+    <a class="navbar-brand" routerLink="/dashboard">
+      <i class="fas fa-book"></i> LibraryMS
+    </a>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarNav">
+      <ul class="navbar-nav me-auto">
+        <li class="nav-item">
+          <a class="nav-link" routerLink="/dashboard" routerLinkActive="active">
+            <i class="fas fa-chart-pie"></i> Dashboard
+          </a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" routerLink="/books" routerLinkActive="active">
+            <i class="fas fa-book"></i> Books
+          </a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" routerLink="/members" routerLinkActive="active">
+            <i class="fas fa-users"></i> Members
+          </a>
+        </li>
+        <li class="nav-item" *appHasRole="['Admin', 'Librarian']">
+          <a class="nav-link" routerLink="/branches" routerLinkActive="active">
+            <i class="fas fa-store"></i> Branches
+          </a>
+        </li>
+        <li class="nav-item" *appHasRole="['Admin', 'Librarian']">
+          <a class="nav-link" routerLink="/borrow" routerLinkActive="active">
+            <i class="fas fa-exchange-alt"></i> Borrow/Return
+          </a>
+        </li>
+        <li class="nav-item" *appHasRole="['Admin', 'Librarian']">
+          <a class="nav-link" routerLink="/reservations" routerLinkActive="active">
+            <i class="fas fa-clock"></i> Reservations
+          </a>
+        </li>
+        <li class="nav-item" *appHasRole="['Admin', 'Librarian']">
+          <a class="nav-link" routerLink="/reports" routerLinkActive="active">
+            <i class="fas fa-file-alt"></i> Reports
+          </a>
+        </li>
+      </ul>
+      <ul class="navbar-nav">
+        <li class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown">
+            <i class="fas fa-user"></i> {{ user?.firstName || 'User' }}
+          </a>
+          <ul class="dropdown-menu dropdown-menu-end">
+            <li><a class="dropdown-item" routerLink="/profile"><i class="fas fa-user-cog"></i> Profile</a></li>
+            <li><hr class="dropdown-divider"></li>
+            <li><a class="dropdown-item" href="#" (click)="logout()"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
+          </ul>
+        </li>
+      </ul>
+    </div>
+  </div>
+</nav>
