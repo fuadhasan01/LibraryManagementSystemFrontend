@@ -1,0 +1,139 @@
+<div class="borrow-history-container">
+  <!-- Header -->
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+      <h2><i class="fas fa-history me-2"></i>Borrow History</h2>
+      <p class="text-muted">View and manage all borrow transactions</p>
+    </div>
+    <button class="btn btn-outline-primary" (click)="loadTransactions()" [disabled]="isLoading">
+      <i class="fas fa-sync-alt" [class.fa-spin]="isLoading"></i>
+      Refresh
+    </button>
+  </div>
+
+  <!-- Filters -->
+  <div class="card mb-4">
+    <div class="card-body">
+      <div class="row g-3">
+        <div class="col-md-4">
+          <label for="statusFilter" class="form-label">Filter by Status</label>
+          <select id="statusFilter" class="form-select" [(ngModel)]="selectedStatus" (change)="onStatusChange(selectedStatus)">
+            <option *ngFor="let status of statuses" [value]="status">
+              {{ status }}
+            </option>
+          </select>
+        </div>
+        <div class="col-md-4">
+          <label class="form-label">&nbsp;</label>
+          <span class="text-muted d-block">
+            <i class="fas fa-book me-1"></i>
+            {{ totalItems }} transactions found
+          </span>
+        </div>
+        <div class="col-md-4 text-end">
+          <label class="form-label">&nbsp;</label>
+          <div>
+            <span class="badge bg-info me-1" *ngIf="getStatusCount('Borrowed') > 0">
+              Borrowed: {{ getStatusCount('Borrowed') }}
+            </span>
+            <span class="badge bg-danger me-1" *ngIf="getStatusCount('Overdue') > 0">
+              Overdue: {{ getStatusCount('Overdue') }}
+            </span>
+            <span class="badge bg-success" *ngIf="getStatusCount('Returned') > 0">
+              Returned: {{ getStatusCount('Returned') }}
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Loading -->
+  <div *ngIf="isLoading" class="spinner-overlay">
+    <div class="spinner-border text-primary" role="status">
+      <span class="visually-hidden">Loading...</span>
+    </div>
+  </div>
+
+  <!-- Transactions Table -->
+  <div *ngIf="!isLoading">
+    <div *ngIf="transactions.length === 0" class="text-center py-5">
+      <i class="fas fa-history fa-3x text-muted mb-3"></i>
+      <h5>No transactions found</h5>
+      <p class="text-muted">Try adjusting your filters or check back later.</p>
+    </div>
+
+    <div *ngIf="transactions.length > 0" class="table-container">
+      <div class="table-responsive">
+        <table class="table table-hover">
+          <thead>
+            <tr>
+              <th>Book</th>
+              <th>Member</th>
+              <th>Borrow Date</th>
+              <th>Due Date</th>
+              <th>Return Date</th>
+              <th>Status</th>
+              <th>Fine</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let transaction of transactions">
+              <td>
+                <strong>{{ transaction.bookTitle | truncate:40 }}</strong>
+                <br>
+                <small class="text-muted">{{ transaction.bookAuthor }}</small>
+              </td>
+              <td>
+                {{ transaction.memberName }}
+                <br>
+                <small class="text-muted">{{ transaction.memberEmail }}</small>
+              </td>
+              <td>{{ transaction.borrowDate | date:'mediumDate' }}</td>
+              <td>
+                {{ transaction.dueDate | date:'mediumDate' }}
+                <span *ngIf="transaction.isOverdue" class="badge bg-danger ms-1">
+                  {{ transaction.daysOverdue }} days overdue
+                </span>
+              </td>
+              <td>{{ transaction.returnDate ? (transaction.returnDate | date:'mediumDate') : '-' }}</td>
+              <td>
+                <span [class]="'badge ' + getStatusClass(transaction.status)">
+                  {{ transaction.statusDisplay }}
+                </span>
+              </td>
+              <td>
+                <span *ngIf="transaction.fineAmount && transaction.fineAmount > 0" class="text-danger">
+                  ${{ transaction.fineAmount | number:'1.2-2' }}
+                </span>
+                <span *ngIf="!transaction.fineAmount || transaction.fineAmount === 0">-</span>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Pagination -->
+      <div class="d-flex justify-content-between align-items-center mt-3">
+        <span class="text-muted">
+          Showing {{ ((currentPage - 1) * pageSize) + 1 }} - 
+          {{ Math.min(currentPage * pageSize, totalItems) }} of {{ totalItems }}
+        </span>
+        <nav>
+          <ul class="pagination mb-0">
+            <li class="page-item" [class.disabled]="currentPage === 1">
+              <a class="page-link" (click)="onPageChange(currentPage - 1)">Previous</a>
+            </li>
+            <li class="page-item" *ngFor="let page of getPages()" 
+                [class.active]="page === currentPage">
+              <a class="page-link" (click)="onPageChange(page)">{{ page }}</a>
+            </li>
+            <li class="page-item" [class.disabled]="currentPage === totalPages">
+              <a class="page-link" (click)="onPageChange(currentPage + 1)">Next</a>
+            </li>
+          </ul>
+        </nav>
+      </div>
+    </div>
+  </div>
+</div>

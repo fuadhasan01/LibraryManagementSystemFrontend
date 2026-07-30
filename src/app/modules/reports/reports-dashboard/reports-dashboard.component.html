@@ -1,0 +1,163 @@
+<div class="reports-dashboard-container">
+  <!-- Header -->
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+      <h2><i class="fas fa-chart-pie me-2"></i>Reports Dashboard</h2>
+      <p class="text-muted">Comprehensive overview of library statistics and metrics</p>
+    </div>
+    <button class="btn btn-outline-primary" (click)="refreshStats()" [disabled]="isLoading">
+      <i class="fas fa-sync-alt" [class.fa-spin]="isLoading"></i>
+      Refresh
+    </button>
+  </div>
+
+  <!-- Loading -->
+  <div *ngIf="isLoading" class="spinner-overlay">
+    <div class="spinner-border text-primary" role="status">
+      <span class="visually-hidden">Loading...</span>
+    </div>
+  </div>
+
+  <!-- Stats Cards -->
+  <div *ngIf="!isLoading && stats">
+    <div class="row g-4 mb-4">
+      <div class="col-xl-3 col-lg-4 col-md-6" *ngFor="let card of getStatCards()">
+        <div class="stat-card">
+          <div class="stat-card-header">
+            <div class="stat-icon" [class]="getColorClass(card.color)">
+              <i [class]="card.icon"></i>
+            </div>
+            <span class="stat-label">{{ card.label }}</span>
+          </div>
+          <div class="stat-card-body">
+            <div class="stat-value">{{ card.value }}</div>
+            <div class="stat-subtext">{{ card.subText }}</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Additional Statistics -->
+    <div class="row g-4">
+      <div class="col-md-6">
+        <div class="card">
+          <div class="card-header">
+            <h5 class="card-title mb-0">
+              <i class="fas fa-info-circle me-2"></i>System Overview
+            </h5>
+          </div>
+          <div class="card-body">
+            <div class="system-stats">
+              <div class="stat-row">
+                <span class="stat-label">Total Borrow Transactions</span>
+                <span class="stat-value">{{ stats?.totalBorrows }}</span>
+              </div>
+              <div class="stat-row">
+                <span class="stat-label">Total Reservations</span>
+                <span class="stat-value">{{ stats?.totalReservations }}</span>
+              </div>
+              <div class="stat-row">
+                <span class="stat-label">Active Borrows</span>
+                <span class="stat-value" [class.text-warning]="stats?.activeBorrows ?? 0> 0">
+                  {{ stats?.activeBorrows }}
+                </span>
+              </div>
+              <div class="stat-row">
+                <span class="stat-label">Overdue Borrows</span>
+                <span class="stat-value" [class.text-danger]="stats?.overdueBorrows ?? 0 > 0">
+                  {{ stats?.overdueBorrows }}
+                </span>
+              </div>
+              <div class="stat-row">
+                <span class="stat-label">Total Fines Collected</span>
+                <span class="stat-value text-warning">${{ stats?.totalFines?.toFixed(2) }}</span>
+              </div>
+              <div class="stat-row">
+                <span class="stat-label">Outstanding Fines</span>
+                <span class="stat-value text-danger">${{ stats?.outstandingFines?.toFixed(2) }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-md-6">
+        <div class="card">
+          <div class="card-header">
+            <h5 class="card-title mb-0">
+              <i class="fas fa-chart-line me-2"></i>Quick Insights
+            </h5>
+          </div>
+          <div class="card-body">
+            <div class="insights">
+              <div class="insight-item">
+                <div class="insight-icon text-success">
+                  <i class="fas fa-check-circle"></i>
+                </div>
+                <div class="insight-content">
+                  <div class="insight-title">Available Books Rate</div>
+                  <div class="insight-value">
+                    {{ stats?.availableBooks && stats?.totalBooks ? ((stats.availableBooks / stats.totalBooks) * 100).toFixed(1) : '0.0' }}%
+                    <span class="insight-subtext">
+                      ({{ stats?.availableBooks }} of {{ stats?.totalBooks }})
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="insight-item">
+                <div class="insight-icon text-info">
+                  <i class="fas fa-users"></i>
+                </div>
+                <div class="insight-content">
+                  <div class="insight-title">Active Members Rate</div>
+                  <div class="insight-value">
+                    {{ stats?.activeMembers && stats?.totalMembers ? ((stats.activeMembers / stats.totalMembers) * 100).toFixed(1) : '0.0' }}%
+                    <span class="insight-subtext">
+                      ({{ stats?.activeMembers }} of {{ stats?.totalMembers }})
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="insight-item">
+                <div class="insight-icon" [class.text-warning]="stats?.overdueBorrows ?? 0 > 0" [class.text-success]="stats?.overdueBorrows ?? 0 === 0">
+                  <i [class]="stats?.overdueBorrows ?? 0 > 0 ? 'fa-exclamation-triangle' : 'fa-check-circle'"></i>
+                </div>
+                <div class="insight-content">
+                  <div class="insight-title">Overdue Status</div>
+                  <div class="insight-value" [class.text-danger]="stats?.overdueBorrows ?? 0 > 0" [class.text-success]="stats?.overdueBorrows ?? 0 === 0">
+                    {{ stats?.overdueBorrows ?? 0 > 0 ? stats?.overdueBorrows + ' overdue items' : 'No overdue items' }}
+                  </div>
+                </div>
+              </div>
+
+              <div class="insight-item">
+                <div class="insight-icon text-warning">
+                  <i class="fas fa-dollar-sign"></i>
+                </div>
+                <div class="insight-content">
+                  <div class="insight-title">Fine Collection Rate</div>
+                  <div class="insight-value">
+                    {{ stats?.totalFines && stats?.outstandingFines ? ((stats.totalFines - stats.outstandingFines) / stats.totalFines * 100).toFixed(1) : '0.0' }}%
+                    <span class="insight-subtext">
+                      Collected: ${{ stats?.totalFines && stats?.outstandingFines ? (stats.totalFines - stats.outstandingFines).toFixed(2) : '0.00' }}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Report Date -->
+    <div class="text-center text-muted mt-4">
+      <small>
+        <i class="fas fa-clock me-1"></i>
+        Report generated on {{ stats?.reportDate | date:'full' }}
+      </small>
+    </div>
+  </div>
+</div>

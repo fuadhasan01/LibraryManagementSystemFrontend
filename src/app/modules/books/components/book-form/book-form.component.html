@@ -1,0 +1,180 @@
+<div class="book-form-container">
+  <div class="card">
+    <div class="card-header">
+      <div class="d-flex justify-content-between align-items-center">
+        <h4 class="mb-0">
+          <i class="fas fa-book"></i>
+          {{ isEditMode ? 'Edit Book' : 'Create New Book' }}
+        </h4>
+        <button type="button" class="btn btn-outline-secondary" (click)="cancel()">
+          <i class="fas fa-times"></i> Cancel
+        </button>
+      </div>
+    </div>
+
+    <div class="card-body">
+      <!-- Loading Spinner -->
+      <div *ngIf="isLoading" class="spinner-overlay">
+        <div class="spinner-border text-primary" role="status">
+          <span class="visually-hidden">Loading...</span>
+        </div>
+      </div>
+
+       <!-- Form -->
+       <!-- Using a div instead of a form to avoid template error when ReactiveFormsModule
+         is not imported in the module: submit is handled via the button click. -->
+       <div *ngIf="!isLoading" [attr.data-form]="true">
+        <div class="row">
+          <!-- Title -->
+          <div class="col-md-8 mb-3">
+            <label for="title" class="form-label">Title <span class="text-danger">*</span></label>
+            <input
+              type="text"
+              id="title"
+              class="form-control"
+              formControlName="title"
+              [class.is-invalid]="isFieldInvalid('title')"
+              placeholder="Enter book title"
+            >
+            <div class="invalid-feedback" *ngIf="isFieldInvalid('title')">
+              {{ getFormControlErrors('title') }}
+            </div>
+          </div>
+
+          <!-- ISBN -->
+          <div class="col-md-4 mb-3">
+            <label for="isbn" class="form-label">ISBN <span class="text-danger">*</span></label>
+            <input
+              type="text"
+              id="isbn"
+              class="form-control"
+              formControlName="isbn"
+              [class.is-invalid]="isFieldInvalid('isbn')"
+              placeholder="978-0-123-45678-9"
+            >
+            <div class="invalid-feedback" *ngIf="isFieldInvalid('isbn')">
+              {{ getFormControlErrors('isbn') }}
+            </div>
+          </div>
+
+          <!-- Author -->
+          <div class="col-md-6 mb-3">
+            <label for="author" class="form-label">Author <span class="text-danger">*</span></label>
+            <input
+              type="text"
+              id="author"
+              class="form-control"
+              formControlName="author"
+              [class.is-invalid]="isFieldInvalid('author')"
+              placeholder="Enter author name"
+            >
+            <div class="invalid-feedback" *ngIf="isFieldInvalid('author')">
+              {{ getFormControlErrors('author') }}
+            </div>
+          </div>
+
+          <!-- Publisher -->
+          <div class="col-md-6 mb-3">
+            <label for="publisher" class="form-label">Publisher</label>
+            <input
+              type="text"
+              id="publisher"
+              class="form-control"
+              formControlName="publisher"
+              placeholder="Enter publisher name"
+            >
+          </div>
+
+          <!-- Publication Year -->
+          <div class="col-md-4 mb-3">
+            <label for="publicationYear" class="form-label">Publication Year <span class="text-danger">*</span></label>
+            <input
+              type="number"
+              id="publicationYear"
+              class="form-control"
+              formControlName="publicationYear"
+              [class.is-invalid]="isFieldInvalid('publicationYear')"
+              placeholder="2023"
+            >
+            <div class="invalid-feedback" *ngIf="isFieldInvalid('publicationYear')">
+              {{ getFormControlErrors('publicationYear') }}
+            </div>
+          </div>
+
+          <!-- Genre -->
+          <div class="col-md-4 mb-3">
+            <label for="genre" class="form-label">Genre</label>
+            <select id="genre" class="form-select" formControlName="genre">
+              <option value="">Select Genre</option>
+              <option *ngFor="let genre of genres" [value]="genre">{{ genre }}</option>
+            </select>
+          </div>
+
+          <!-- Total Copies -->
+          <div class="col-md-4 mb-3">
+            <label for="totalCopies" class="form-label">Total Copies <span class="text-danger">*</span></label>
+            <input
+              type="number"
+              id="totalCopies"
+              class="form-control"
+              formControlName="totalCopies"
+              [class.is-invalid]="isFieldInvalid('totalCopies')"
+              placeholder="5"
+              min="1"
+            >
+            <div class="invalid-feedback" *ngIf="isFieldInvalid('totalCopies')">
+              {{ getFormControlErrors('totalCopies') }}
+            </div>
+            <small class="text-muted">Number of copies available in the library</small>
+          </div>
+
+          <!-- Location -->
+          <div class="col-md-12 mb-3">
+            <label for="location" class="form-label">Location</label>
+            <input
+              type="text"
+              id="location"
+              class="form-control"
+              formControlName="location"
+              placeholder="e.g., Shelf A1, Section 3"
+            >
+          </div>
+
+          <!-- Description -->
+          <div class="col-md-12 mb-3">
+            <label for="description" class="form-label">Description</label>
+            <textarea
+              id="description"
+              class="form-control"
+              formControlName="description"
+              rows="4"
+              placeholder="Enter book description"
+              [class.is-invalid]="isFieldInvalid('description')"
+            ></textarea>
+            <div class="invalid-feedback" *ngIf="isFieldInvalid('description')">
+              {{ getFormControlErrors('description') }}
+            </div>
+            <small class="text-muted">Brief description of the book (max 2000 characters)</small>
+          </div>
+        </div>
+
+        <!-- Form Actions -->
+        <div class="d-flex justify-content-end gap-2 mt-4">
+          <button type="button" class="btn btn-secondary" (click)="cancel()">
+            <i class="fas fa-times"></i> Cancel
+          </button>
+          <button type="button" class="btn btn-primary" (click)="onSubmit()" [disabled]="bookForm.invalid || isSubmitting">
+            <span *ngIf="!isSubmitting">
+              <i class="fas fa-save"></i>
+              {{ isEditMode ? 'Update Book' : 'Create Book' }}
+            </span>
+            <span *ngIf="isSubmitting">
+              <span class="spinner-border spinner-border-sm me-2" role="status"></span>
+              {{ isEditMode ? 'Updating...' : 'Creating...' }}
+            </span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

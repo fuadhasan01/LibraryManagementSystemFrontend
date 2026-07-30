@@ -1,19 +1,14 @@
-import { NgModule } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { RouterModule } from '@angular/router';
-import { FormsModule, ReactiveFormsModule } from '@angular/forms';
+import { CommonModule } from "@angular/common";
+import { ConfirmationModalComponent } from "./components/confirmation-modal/confirmation-modal.component";
+import { LoadingSpinnerComponent } from "./components/loading-spinner/loading-spinner.component";
+import { NavbarComponent } from "./components/navbar/navbar.component";
+import { SidebarComponent } from "./components/sidebar/sidebar.component";
+import { HasRoleDirective } from "./directives/has-role.directive";
+import { TruncatePipe } from "./pipes/truncate.pipe";
+import { RouterModule } from "@angular/router";
+import { FormsModule, ReactiveFormsModule } from "@angular/forms";
+import { NgModule } from "@angular/core";
 
-// Components
-import { LoadingSpinnerComponent } from './components/loading-spinner/loading-spinner.component';
-import { ConfirmationModalComponent } from './components/confirmation-modal/confirmation-modal.component';
-
-// Directives
-import { HasRoleDirective } from './directives/has-role.directive';
-
-// Pipes
-import { TruncatePipe } from './pipes/truncate.pipe';
-import { NavbarComponent } from './components/navbar/navbar.component';
-import { SidebarComponent } from './components/sidebar/sidebar.component';
 
 @NgModule({
   declarations: [

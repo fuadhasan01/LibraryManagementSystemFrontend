@@ -1,1 +1,42 @@
-<p>sidebar works!</p>
+<div class="sidebar">
+  <div class="sidebar-header">
+    <div class="sidebar-brand">
+      <i class="fas fa-book-open"></i>
+      <span>LibraryMS</span>
+    </div>
+  </div>
+
+  <nav class="sidebar-nav">
+    <ul class="nav flex-column">
+      <li class="nav-item" *ngFor="let item of menuItems">
+        <a class="nav-link" 
+           [routerLink]="item.route" 
+           routerLinkActive="active"
+           [routerLinkActiveOptions]="{ exact: true }"
+           *appHasRole="item.roles">
+          <i [class]="'fas ' + item.icon"></i>
+          <span>{{ item.label }}</span>
+          <span class="badge" *ngIf="getBadgeCount(item.label) > 0">
+            {{ getBadgeCount(item.label) }}
+          </span>
+        </a>
+      </li>
+    </ul>
+  </nav>
+
+  <div class="sidebar-footer">
+    <div class="user-info">
+      <div class="user-avatar">
+        <i class="fas fa-user"></i>
+      </div>
+      <div class="user-details">
+        <div class="user-name">{{ getUserName() }}</div>
+        <div class="user-role">{{ getUserRole() }}</div>
+      </div>
+    </div>
+    <button class="btn btn-logout" (click)="logout()">
+      <i class="fas fa-sign-out-alt"></i>
+      Logout
+    </button>
+  </div>
+</div>

@@ -1,0 +1,42 @@
+.app-container {
+  display: flex;
+  min-height: calc(100vh - 56px);
+}
+
+.main-content {
+  flex: 1;
+  padding: 2rem;
+  transition: margin-left 0.3s ease;
+  background-color: #f8fafc;
+
+  &.with-sidebar {
+    margin-left: 250px;
+  }
+}
+.sidebar-overlay {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 999;
+
+  &.show {
+    display: block;
+  }
+}
+
+@media (max-width: 768px) {
+  .main-content {
+    padding: 1rem;
+
+    &.with-sidebar {
+      margin-left: 0;
+    }
+  }
+    .sidebar-overlay.show {
+    display: block;
+  }
+}

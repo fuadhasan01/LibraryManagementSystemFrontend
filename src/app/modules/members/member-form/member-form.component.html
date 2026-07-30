@@ -1,0 +1,175 @@
+<div class="member-form-container">
+  <div class="card">
+    <div class="card-header">
+      <div class="d-flex justify-content-between align-items-center">
+        <h4 class="mb-0">
+          <i class="fas fa-user"></i>
+          {{ isEditMode ? 'Edit Member' : 'Create New Member' }}
+        </h4>
+        <button type="button" class="btn btn-outline-secondary" (click)="cancel()">
+          <i class="fas fa-times"></i> Cancel
+        </button>
+      </div>
+    </div>
+
+    <div class="card-body">
+      <!-- Loading Spinner -->
+      <div *ngIf="isLoading" class="spinner-overlay">
+        <div class="spinner-border text-primary" role="status">
+          <span class="visually-hidden">Loading...</span>
+        </div>
+      </div>
+
+      <!-- Form -->
+      <form *ngIf="!isLoading" [formGroup]="memberForm" (ngSubmit)="onSubmit()">
+        <div class="row">
+          <!-- Email -->
+          <div class="col-md-6 mb-3">
+            <label for="email" class="form-label">Email <span class="text-danger">*</span></label>
+            <input
+              type="email"
+              id="email"
+              class="form-control"
+              formControlName="email"
+              [class.is-invalid]="isFieldInvalid('email')"
+              [readonly]="isEditMode"
+              placeholder="Enter email address"
+            >
+            <div class="invalid-feedback" *ngIf="isFieldInvalid('email')">
+              {{ getFormControlErrors('email') }}
+            </div>
+          </div>
+
+          <!-- Password -->
+          <div class="col-md-6 mb-3" *ngIf="!isEditMode">
+            <label for="password" class="form-label">Password <span class="text-danger">*</span></label>
+            <input
+              type="password"
+              id="password"
+              class="form-control"
+              formControlName="password"
+              [class.is-invalid]="isFieldInvalid('password')"
+              placeholder="Enter password"
+            >
+            <div class="invalid-feedback" *ngIf="isFieldInvalid('password')">
+              {{ getFormControlErrors('password') }}
+            </div>
+            <small class="text-muted">
+              <i class="fas fa-info-circle"></i>
+              Password must meet the following requirements:
+            </small>
+            <ul class="text-muted small mt-1 ps-3">
+              <li *ngFor="let req of getPasswordRequirements()">{{ req }}</li>
+            </ul>
+          </div>
+
+          <div class="col-md-6 mb-3" *ngIf="isEditMode">
+            <label class="form-label">Password</label>
+            <div class="form-control-static text-muted">
+              <i class="fas fa-lock"></i> Leave blank to keep current password
+            </div>
+          </div>
+
+          <!-- First Name -->
+          <div class="col-md-6 mb-3">
+            <label for="firstName" class="form-label">First Name <span class="text-danger">*</span></label>
+            <input
+              type="text"
+              id="firstName"
+              class="form-control"
+              formControlName="firstName"
+              [class.is-invalid]="isFieldInvalid('firstName')"
+              placeholder="Enter first name"
+            >
+            <div class="invalid-feedback" *ngIf="isFieldInvalid('firstName')">
+              {{ getFormControlErrors('firstName') }}
+            </div>
+          </div>
+
+          <!-- Last Name -->
+          <div class="col-md-6 mb-3">
+            <label for="lastName" class="form-label">Last Name <span class="text-danger">*</span></label>
+            <input
+              type="text"
+              id="lastName"
+              class="form-control"
+              formControlName="lastName"
+              [class.is-invalid]="isFieldInvalid('lastName')"
+              placeholder="Enter last name"
+            >
+            <div class="invalid-feedback" *ngIf="isFieldInvalid('lastName')">
+              {{ getFormControlErrors('lastName') }}
+            </div>
+          </div>
+
+          <!-- Phone -->
+          <div class="col-md-6 mb-3">
+            <label for="phone" class="form-label">Phone <span class="text-danger">*</span></label>
+            <input
+              type="tel"
+              id="phone"
+              class="form-control"
+              formControlName="phone"
+              [class.is-invalid]="isFieldInvalid('phone')"
+              placeholder="+1234567890"
+            >
+            <div class="invalid-feedback" *ngIf="isFieldInvalid('phone')">
+              {{ getFormControlErrors('phone') }}
+            </div>
+          </div>
+
+          <!-- Max Books Allowed -->
+          <div class="col-md-6 mb-3">
+            <label for="maxBooksAllowed" class="form-label">Max Books Allowed <span class="text-danger">*</span></label>
+            <input
+              type="number"
+              id="maxBooksAllowed"
+              class="form-control"
+              formControlName="maxBooksAllowed"
+              [class.is-invalid]="isFieldInvalid('maxBooksAllowed')"
+              min="1"
+              max="20"
+            >
+            <div class="invalid-feedback" *ngIf="isFieldInvalid('maxBooksAllowed')">
+              {{ getFormControlErrors('maxBooksAllowed') }}
+            </div>
+            <small class="text-muted">Maximum number of books this member can borrow (1-20)</small>
+          </div>
+
+          <!-- Address -->
+          <div class="col-md-12 mb-3">
+            <label for="address" class="form-label">Address</label>
+            <textarea
+              id="address"
+              class="form-control"
+              formControlName="address"
+              rows="3"
+              placeholder="Enter address"
+              [class.is-invalid]="isFieldInvalid('address')"
+            ></textarea>
+            <div class="invalid-feedback" *ngIf="isFieldInvalid('address')">
+              {{ getFormControlErrors('address') }}
+            </div>
+          </div>
+        </div>
+
+        <!-- Form Actions -->
+        <div class="d-flex justify-content-end gap-2 mt-4">
+          <button type="button" class="btn btn-secondary" (click)="cancel()">
+            <i class="fas fa-times"></i> Cancel
+          </button>
+          <button type="submit" class="btn btn-primary" [disabled]="memberForm.invalid || isSubmitting">
+            <span *ngIf="!isSubmitting">
+              <i class="fas fa-save"></i>
+              {{ isEditMode ? 'Update Member' : 'Create Member' }}
+            </span>
+            <span *ngIf="isSubmitting">
+              <span class="spinner-border spinner-border-sm me-2" role="status"></span>
+              {{ isEditMode ? 'Updating...' : 'Creating...' }}
+            </span>
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>

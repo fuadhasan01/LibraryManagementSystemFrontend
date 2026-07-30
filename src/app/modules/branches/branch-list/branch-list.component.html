@@ -1,0 +1,142 @@
+<div class="branch-list-container">
+  <!-- Header -->
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+      <h2><i class="fas fa-store me-2"></i>Branches</h2>
+      <p class="text-muted">Manage library branches and their inventory</p>
+    </div>
+    <button *appHasRole="['Admin']" class="btn btn-primary" (click)="createBranch()">
+      <i class="fas fa-plus"></i> Add Branch
+    </button>
+  </div>
+
+  <!-- Filters -->
+  <div class="card mb-4">
+    <div class="card-body">
+      <div class="row g-3">
+        <div class="col-md-5">
+          <div class="input-group">
+            <input type="text" 
+                   class="form-control" 
+                   placeholder="Search by name, code, or address..."
+                   [(ngModel)]="searchTerm"
+                   (input)="onSearch()">
+            <button class="btn btn-outline-secondary" (click)="clearSearch()" *ngIf="searchTerm">
+              <i class="fas fa-times"></i>
+            </button>
+            <button class="btn btn-outline-primary" (click)="onSearch()">
+              <i class="fas fa-search"></i>
+            </button>
+          </div>
+        </div>
+        <div class="col-md-3">
+          <div class="form-check form-switch pt-2">
+            <input class="form-check-input" type="checkbox" 
+                   id="activeFilter" 
+                   [(ngModel)]="showActiveOnly"
+                   (change)="toggleActiveFilter()">
+            <label class="form-check-label" for="activeFilter">
+              Show Active Only
+            </label>
+          </div>
+        </div>
+        <div class="col-md-4 text-end">
+          <span class="text-muted">
+            <i class="fas fa-store me-1"></i>
+            {{ filteredBranches.length }} of {{ branches.length }} branches
+          </span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Loading -->
+  <div *ngIf="isLoading" class="spinner-overlay">
+    <div class="spinner-border text-primary" role="status">
+      <span class="visually-hidden">Loading...</span>
+    </div>
+  </div>
+
+  <!-- Branch Cards -->
+  <div *ngIf="!isLoading">
+    <div *ngIf="filteredBranches.length === 0" class="text-center py-5">
+      <i class="fas fa-store fa-3x text-muted mb-3"></i>
+      <h5>No branches found</h5>
+      <p class="text-muted">Try adjusting your search filters or add a new branch.</p>
+      <button *appHasRole="['Admin']" class="btn btn-primary" (click)="createBranch()">
+        <i class="fas fa-plus"></i> Add Branch
+      </button>
+    </div>
+
+    <div *ngIf="filteredBranches.length > 0" class="row g-4">
+      <div class="col-xl-4 col-lg-6 col-md-6" *ngFor="let branch of filteredBranches">
+        <div class="branch-card">
+          <div class="branch-header">
+            <div class="branch-status">
+              <span [class]="'badge ' + getStatusClass(branch.isActive)">
+                <i [class]="getStatusIcon(branch.isActive)"></i>
+                {{ getStatusText(branch.isActive) }}
+              </span>
+            </div>
+            <div class="branch-code">
+              <span class="badge bg-secondary">{{ branch.code }}</span>
+            </div>
+          </div>
+          
+          <div class="branch-body">
+            <h5 class="branch-name">{{ branch.name }}</h5>
+            <p class="branch-address">
+              <i class="fas fa-map-marker-alt text-muted me-2"></i>
+              {{ branch.address }}
+            </p>
+            <div class="branch-details">
+              <div class="detail-item">
+                <i class="fas fa-phone text-muted"></i>
+                <span>{{ branch.phone }}</span>
+              </div>
+              <div class="detail-item">
+                <i class="fas fa-envelope text-muted"></i>
+                <span>{{ branch.email }}</span>
+              </div>
+              <div class="detail-item">
+                <i class="fas fa-clock text-muted"></i>
+                <span>{{ getOperatingHours(branch) }}</span>
+              </div>
+            </div>
+            
+            <div class="branch-stats">
+              <div class="stat-item">
+                <span class="stat-value">{{ getTotalBooks(branch) }}</span>
+                <span class="stat-label">Books</span>
+              </div>
+              <div class="stat-item">
+                <span class="stat-value">{{ getTotalMembers(branch) }}</span>
+                <span class="stat-label">Members</span>
+              </div>
+              <div class="stat-item">
+                <span class="stat-value" [class.text-success]="branch.isActive" [class.text-danger]="!branch.isActive">
+                  {{ branch.isActive ? 'Online' : 'Offline' }}
+                </span>
+                <span class="stat-label">Status</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="branch-footer">
+            <div class="btn-group w-100" role="group">
+              <button class="btn btn-outline-info" (click)="viewInventory(branch.id)" title="View Inventory">
+                <i class="fas fa-boxes"></i> Inventory
+              </button>
+              <button *appHasRole="['Admin']" class="btn btn-outline-primary" (click)="editBranch(branch.id)" title="Edit">
+                <i class="fas fa-edit"></i> Edit
+              </button>
+              <button *appHasRole="['Admin']" class="btn btn-outline-danger" (click)="deleteBranch(branch.id)" title="Delete">
+                <i class="fas fa-trash"></i> Delete
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

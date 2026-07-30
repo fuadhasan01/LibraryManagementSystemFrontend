@@ -1,0 +1,204 @@
+<div class="branch-form-container">
+  <div class="card">
+    <div class="card-header">
+      <div class="d-flex justify-content-between align-items-center">
+        <h4 class="mb-0">
+          <i class="fas fa-store"></i>
+          {{ isEditMode ? 'Edit Branch' : 'Create New Branch' }}
+        </h4>
+        <button type="button" class="btn btn-outline-secondary" (click)="cancel()">
+          <i class="fas fa-times"></i> Cancel
+        </button>
+      </div>
+    </div>
+
+    <div class="card-body">
+      <!-- Loading Spinner -->
+      <div *ngIf="isLoading" class="spinner-overlay">
+        <div class="spinner-border text-primary" role="status">
+          <span class="visually-hidden">Loading...</span>
+        </div>
+      </div>
+
+      <!-- Form -->
+      <form *ngIf="!isLoading" [formGroup]="branchForm" (ngSubmit)="onSubmit()">
+        <div class="row">
+          <!-- Branch Name -->
+          <div class="col-md-6 mb-3">
+            <label for="name" class="form-label">Branch Name <span class="text-danger">*</span></label>
+            <input
+              type="text"
+              id="name"
+              class="form-control"
+              formControlName="name"
+              [class.is-invalid]="isFieldInvalid('name')"
+              placeholder="Enter branch name"
+            >
+            <div class="invalid-feedback" *ngIf="isFieldInvalid('name')">
+              {{ getFormControlErrors('name') }}
+            </div>
+          </div>
+
+          <!-- Branch Code -->
+          <div class="col-md-6 mb-3">
+            <label for="code" class="form-label">Branch Code <span class="text-danger">*</span></label>
+            <input
+              type="text"
+              id="code"
+              class="form-control"
+              formControlName="code"
+              [class.is-invalid]="isFieldInvalid('code')"
+              placeholder="MAIN"
+              [readonly]="isEditMode"
+            >
+            <div class="invalid-feedback" *ngIf="isFieldInvalid('code')">
+              {{ getFormControlErrors('code') }}
+            </div>
+            <small class="text-muted" *ngIf="!isEditMode">Unique code for the branch (e.g., MAIN, NORTH, SOUTH)</small>
+            <small class="text-muted" *ngIf="isEditMode">Code cannot be changed after creation</small>
+          </div>
+
+          <!-- Address -->
+          <div class="col-md-12 mb-3">
+            <label for="address" class="form-label">Address <span class="text-danger">*</span></label>
+            <textarea
+              id="address"
+              class="form-control"
+              formControlName="address"
+              rows="3"
+              [class.is-invalid]="isFieldInvalid('address')"
+              placeholder="Enter full address"
+            ></textarea>
+            <div class="invalid-feedback" *ngIf="isFieldInvalid('address')">
+              {{ getFormControlErrors('address') }}
+            </div>
+          </div>
+
+          <!-- Phone -->
+          <div class="col-md-6 mb-3">
+            <label for="phone" class="form-label">Phone <span class="text-danger">*</span></label>
+            <input
+              type="tel"
+              id="phone"
+              class="form-control"
+              formControlName="phone"
+              [class.is-invalid]="isFieldInvalid('phone')"
+              placeholder="+1-555-0101"
+            >
+            <div class="invalid-feedback" *ngIf="isFieldInvalid('phone')">
+              {{ getFormControlErrors('phone') }}
+            </div>
+          </div>
+
+          <!-- Email -->
+          <div class="col-md-6 mb-3">
+            <label for="email" class="form-label">Email <span class="text-danger">*</span></label>
+            <input
+              type="email"
+              id="email"
+              class="form-control"
+              formControlName="email"
+              [class.is-invalid]="isFieldInvalid('email')"
+              placeholder="branch@library.com"
+            >
+            <div class="invalid-feedback" *ngIf="isFieldInvalid('email')">
+              {{ getFormControlErrors('email') }}
+            </div>
+          </div>
+
+          <!-- Opening Time -->
+          <div class="col-md-3 mb-3">
+            <label for="openingTime" class="form-label">Opening Time <span class="text-danger">*</span></label>
+            <input
+              type="time"
+              id="openingTime"
+              class="form-control"
+              formControlName="openingTime"
+              [class.is-invalid]="isFieldInvalid('openingTime')"
+            >
+            <div class="invalid-feedback" *ngIf="isFieldInvalid('openingTime')">
+              {{ getFormControlErrors('openingTime') }}
+            </div>
+          </div>
+
+          <!-- Closing Time -->
+          <div class="col-md-3 mb-3">
+            <label for="closingTime" class="form-label">Closing Time <span class="text-danger">*</span></label>
+            <input
+              type="time"
+              id="closingTime"
+              class="form-control"
+              formControlName="closingTime"
+              [class.is-invalid]="isFieldInvalid('closingTime') || !validateTimeRange()"
+            >
+            <div class="invalid-feedback" *ngIf="!validateTimeRange()">
+              {{ getTimeValidationMessage() }}
+            </div>
+            <div class="invalid-feedback" *ngIf="isFieldInvalid('closingTime') && validateTimeRange()">
+              {{ getFormControlErrors('closingTime') }}
+            </div>
+          </div>
+
+          <!-- Description -->
+          <div class="col-md-12 mb-3">
+            <label for="description" class="form-label">Description</label>
+            <textarea
+              id="description"
+              class="form-control"
+              formControlName="description"
+              rows="3"
+              placeholder="Enter branch description"
+            ></textarea>
+            <div class="invalid-feedback" *ngIf="isFieldInvalid('description')">
+              {{ getFormControlErrors('description') }}
+            </div>
+            <small class="text-muted">Optional description of the branch and its services</small>
+          </div>
+
+          <!-- Location Coordinates -->
+          <div class="col-md-6 mb-3">
+            <label for="latitude" class="form-label">Latitude</label>
+            <input
+              type="text"
+              id="latitude"
+              class="form-control"
+              formControlName="latitude"
+              placeholder="40.7128"
+            >
+            <small class="text-muted">Optional GPS coordinates for map display</small>
+          </div>
+
+          <div class="col-md-6 mb-3">
+            <label for="longitude" class="form-label">Longitude</label>
+            <input
+              type="text"
+              id="longitude"
+              class="form-control"
+              formControlName="longitude"
+              placeholder="-74.0060"
+            >
+            <small class="text-muted">Optional GPS coordinates for map display</small>
+          </div>
+        </div>
+
+        <!-- Form Actions -->
+        <div class="d-flex justify-content-end gap-2 mt-4 pt-3 border-top">
+          <button type="button" class="btn btn-secondary" (click)="cancel()">
+            <i class="fas fa-times"></i> Cancel
+          </button>
+          <button type="submit" class="btn btn-primary" 
+                  [disabled]="branchForm.invalid || isSubmitting || !validateTimeRange()">
+            <span *ngIf="!isSubmitting">
+              <i class="fas fa-save"></i>
+              {{ isEditMode ? 'Update Branch' : 'Create Branch' }}
+            </span>
+            <span *ngIf="isSubmitting">
+              <span class="spinner-border spinner-border-sm me-2" role="status"></span>
+              {{ isEditMode ? 'Updating...' : 'Creating...' }}
+            </span>
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>

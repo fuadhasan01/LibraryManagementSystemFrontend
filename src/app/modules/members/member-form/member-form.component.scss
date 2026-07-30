@@ -1,0 +1,127 @@
+.member-form-container {
+  max-width: 900px;
+  margin: 0 auto;
+
+  .card {
+    border: none;
+    border-radius: 12px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+
+    .card-header {
+      background: transparent;
+      border-bottom: 1px solid #e2e8f0;
+      padding: 1.25rem 1.5rem;
+
+      h4 {
+        color: #1e293b;
+        font-weight: 600;
+      }
+    }
+
+    .card-body {
+      padding: 1.5rem;
+    }
+  }
+
+  .form-label {
+    font-weight: 500;
+    color: #1e293b;
+    font-size: 0.875rem;
+    margin-bottom: 0.25rem;
+  }
+
+  .form-control, .form-select {
+    border-radius: 8px;
+    border: 1px solid #e2e8f0;
+    padding: 0.625rem 1rem;
+    transition: all 0.2s ease;
+
+    &:focus {
+      border-color: #2563eb;
+      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+    }
+
+    &.is-invalid {
+      border-color: #ef4444;
+      background-image: none;
+    }
+
+    &:disabled, &[readonly] {
+      background-color: #f8fafc;
+    }
+  }
+
+  .form-control-static {
+    padding: 0.625rem 1rem;
+    background-color: #f8fafc;
+    border-radius: 8px;
+    border: 1px solid #e2e8f0;
+  }
+
+  .invalid-feedback {
+    color: #ef4444;
+    font-size: 0.875rem;
+    margin-top: 0.25rem;
+  }
+
+  .text-danger {
+    color: #ef4444;
+  }
+
+  .spinner-overlay {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 300px;
+  }
+
+  textarea.form-control {
+    resize: vertical;
+    min-height: 80px;
+  }
+
+  ul {
+    list-style-type: disc;
+    margin-bottom: 0;
+  }
+
+  .btn {
+    border-radius: 8px;
+    padding: 0.5rem 1.5rem;
+    font-weight: 500;
+    transition: all 0.2s ease;
+
+    &.btn-primary {
+      background-color: #2563eb;
+      border-color: #2563eb;
+
+      &:hover:not(:disabled) {
+        background-color: #1d4ed8;
+        border-color: #1d4ed8;
+        transform: translateY(-1px);
+        box-shadow: 0 4px 6px rgba(37, 99, 235, 0.3);
+      }
+
+      &:disabled {
+        opacity: 0.65;
+        cursor: not-allowed;
+      }
+    }
+
+    &.btn-secondary {
+      &:hover {
+        transform: translateY(-1px);
+      }
+    }
+  }
+}
+
+@media (max-width: 768px) {
+  .member-form-container {
+    padding: 0 1rem;
+
+    .card-body {
+      padding: 1rem;
+    }
+  }
+}

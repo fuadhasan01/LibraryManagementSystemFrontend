@@ -22,6 +22,17 @@ export class NavbarComponent implements OnInit {
     });
   }
 
+  toggleSidebar(): void {
+    const sidebar = document.querySelector('.sidebar');
+    const overlay = document.querySelector('.sidebar-overlay');
+    if (sidebar) {
+      sidebar.classList.toggle('open');
+    }
+    if (overlay) {
+      overlay.classList.toggle('show');
+    }
+  }
+
   logout(): void {
     this.authService.logout();
     this.router.navigate(['/auth/login']);

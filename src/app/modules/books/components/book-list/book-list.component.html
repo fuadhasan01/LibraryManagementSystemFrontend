@@ -1,0 +1,173 @@
+<div class="book-list-container">
+  <!-- Header -->
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>Books</h2>
+    <button *appHasRole="['Admin', 'Librarian']" 
+            class="btn btn-primary" 
+            (click)="createBook()">
+      <i class="fas fa-plus"></i> Add Book
+    </button>
+  </div>
+
+  <!-- Filters -->
+  <div class="card mb-4">
+    <div class="card-body">
+      <div class="row g-3">
+        <div class="col-md-4">
+          <div class="input-group">
+                <input type="text" 
+                    class="form-control" 
+                    placeholder="Search by title or author..."
+                    [value]="searchTerm"
+                    (input)="onSearchInput($event)"
+                    (keyup.enter)="onSearch()">
+            <button class="btn btn-outline-primary" (click)="onSearch()">
+              <i class="fas fa-search"></i>
+            </button>
+          </div>
+        </div>
+        <div class="col-md-3">
+            <select
+            class="form-select"
+            [value]="selectedGenre"
+            (change)="onGenreSelect($event)">
+            <option value="">All Genres</option>
+            <option *ngFor="let genre of genres" [value]="genre">
+                {{ genre }}
+            </option>
+            </select>
+        </div>
+        <div class="col-md-2">
+          <button class="btn btn-outline-secondary w-100" (click)="clearFilters()">
+            <i class="fas fa-undo"></i> Clear
+          </button>
+        </div>
+        <div class="col-md-3 text-end">
+          <span class="text-muted">Total: {{ totalItems }} books</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Loading -->
+  <div *ngIf="isLoading" class="spinner-overlay">
+    <div class="spinner-border text-primary" role="status">
+      <span class="visually-hidden">Loading...</span>
+    </div>
+  </div>
+
+  <!-- Book List -->
+  <div *ngIf="!isLoading">
+    <div *ngIf="books.length === 0" class="text-center py-5">
+      <i class="fas fa-book fa-3x text-muted mb-3"></i>
+      <h5>No books found</h5>
+      <p class="text-muted">Try adjusting your search filters or add a new book.</p>
+    </div>
+
+    <div *ngIf="books.length > 0" class="table-container">
+      <div class="table-responsive">
+        <table class="table table-hover">
+          <thead>
+            <tr>
+              <th>Title</th>
+              <th>Author</th>
+              <th>ISBN</th>
+              <th>Genre</th>
+              <th>Copies</th>
+              <th>Available</th>
+              <th class="text-center">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let book of books">
+              <td>
+                <strong>{{ getBookTitle(book.title) }}</strong>
+              </td>
+              <td>{{ book.author }}</td>
+              <td>{{ book.isbn }}</td>
+              <td><span class="badge bg-secondary">{{ book.genre || 'N/A' }}</span></td>
+              <td>{{ book.totalCopies }}</td>
+              <td>
+                <span [class.text-success]="book.availableCopies > 0" 
+                      [class.text-danger]="book.availableCopies === 0">
+                  {{ book.availableCopies }}
+                  <i *ngIf="book.availableCopies > 0" class="fas fa-check-circle text-success"></i>
+                  <i *ngIf="book.availableCopies === 0" class="fas fa-times-circle text-danger"></i>
+                </span>
+              </td>
+              <td class="text-center">
+                <div class="btn-group btn-group-sm">
+                  <button class="btn btn-outline-info" (click)="viewBook(book.id)" title="View">
+                    <i class="fas fa-eye"></i>
+                  </button>
+                  <button *appHasRole="['Admin', 'Librarian']" 
+                          class="btn btn-outline-primary" 
+                          (click)="editBook(book.id)" 
+                          title="Edit">
+                    <i class="fas fa-edit"></i>
+                  </button>
+                  <button *appHasRole="['Admin']" 
+                          class="btn btn-outline-danger" 
+                          (click)="deleteBook(book.id)" 
+                          title="Delete">
+                    <i class="fas fa-trash"></i>
+                  </button>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Pagination -->
+        <div class="d-flex justify-content-between align-items-center mt-3">
+        <span class="text-muted">
+            Showing
+            {{ totalItems === 0 ? 0 : ((currentPage - 1) * pageSize) + 1 }}
+            -
+            {{ getEndItem() }}
+            of {{ totalItems }}
+        </span>
+
+        <nav>
+            <ul class="pagination mb-0">
+
+            <li class="page-item" [class.disabled]="currentPage === 1">
+                <button
+                type="button"
+                class="page-link"
+                [disabled]="currentPage === 1"
+                (click)="onPageChange(currentPage - 1)">
+                Previous
+                </button>
+            </li>
+
+            <li
+                class="page-item"
+                *ngFor="let page of getPages()"
+                [class.active]="page === currentPage">
+
+                <button
+                type="button"
+                class="page-link"
+                (click)="onPageChange(page)">
+                {{ page }}
+                </button>
+            </li>
+
+            <li class="page-item" [class.disabled]="currentPage === totalPages">
+                <button
+                type="button"
+                class="page-link"
+                [disabled]="currentPage === totalPages"
+                (click)="onPageChange(currentPage + 1)">
+                Next
+                </button>
+            </li>
+
+            </ul>
+        </nav>
+        </div>
+    </div>
+  </div>
+</div>

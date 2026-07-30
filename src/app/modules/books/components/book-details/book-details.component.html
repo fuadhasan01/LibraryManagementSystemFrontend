@@ -1,0 +1,132 @@
+<div class="book-details-container">
+  <!-- Loading -->
+  <div *ngIf="isLoading" class="spinner-overlay">
+    <div class="spinner-border text-primary" role="status">
+      <span class="visually-hidden">Loading...</span>
+    </div>
+  </div>
+
+  <!-- Book Details -->
+  <div *ngIf="!isLoading && book != null">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-start mb-4">
+      <div>
+        <button class="btn btn-link text-decoration-none ps-0" (click)="goBack()">
+          <i class="fas fa-arrow-left"></i> Back to Books
+        </button>
+        <h2 class="mt-2">{{ book?.title }}</h2>
+        <p class="text-muted">by {{ book?.author }}</p>
+      </div>
+      <div class="btn-group" *appHasRole="['Admin', 'Librarian']">
+        <button class="btn btn-outline-primary" (click)="editBook()">
+          <i class="fas fa-edit"></i> Edit
+        </button>
+        <button class="btn btn-outline-danger" (click)="deleteBook()">
+          <i class="fas fa-trash"></i> Delete
+        </button>
+      </div>
+    </div>
+
+    <div class="row">
+      <!-- Main Info -->
+      <div class="col-md-8">
+        <div class="card mb-4">
+          <div class="card-body">
+            <h5 class="card-title">Book Information</h5>
+            <div class="row">
+              <div class="col-md-6">
+                <div class="info-item">
+                  <label>ISBN</label>
+                  <p>{{ book?.isbn }}</p>
+                </div>
+                <div class="info-item">
+                  <label>Publisher</label>
+                  <p>{{ book?.publisher || 'N/A' }}</p>
+                </div>
+                <div class="info-item">
+                  <label>Publication Year</label>
+                  <p>{{ book?.publicationYear }}</p>
+                </div>
+              </div>
+              <div class="col-md-6">
+                <div class="info-item">
+                  <label>Genre</label>
+                  <p><span class="badge bg-secondary">{{ book?.genre || 'N/A' }}</span></p>
+                </div>
+                <div class="info-item">
+                  <label>Location</label>
+                  <p>{{ book?.location || 'N/A' }}</p>
+                </div>
+                <div class="info-item">
+                  <label>Status</label>
+                  <p>
+                    <i [class]="getAvailabilityIcon(book?.availableCopies ?? 0)"></i>
+                    <span [class]="getStatusClass(book?.availableCopies ?? 0)">
+                      {{ getStatusText(book?.availableCopies ?? 0) }}
+                    </span>
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Description -->
+        <div class="card mb-4" *ngIf="book?.description">
+          <div class="card-body">
+            <h5 class="card-title">Description</h5>
+            <p class="card-text">{{ book?.description }}</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Sidebar -->
+      <div class="col-md-4">
+        <!-- Inventory Status -->
+        <div class="card mb-4">
+          <div class="card-body">
+            <h5 class="card-title">Inventory Status</h5>
+            <div class="inventory-stats">
+              <div class="stat-item">
+                <span class="stat-label">Total Copies</span>
+                <span class="stat-value">{{ book?.totalCopies }}</span>
+              </div>
+              <div class="stat-item">
+                <span class="stat-label">Available Copies</span>
+                <span class="stat-value" [class.text-success]="(book?.availableCopies ?? 0) > 0" [class.text-danger]="(book?.availableCopies ?? 0) === 0">
+                  {{ book?.availableCopies ?? 0 }}
+                </span>
+              </div>
+              <div class="stat-item">
+                <span class="stat-label">Borrowed Copies</span>
+                <span class="stat-value">{{ (book?.totalCopies ?? 0) - (book?.availableCopies ?? 0) }}</span>
+              </div>
+              <div class="stat-item">
+                <span class="stat-label">Availability Rate</span>
+                <span class="stat-value">
+                  {{ (book?.totalCopies ?? 0) > 0 ? (((book?.availableCopies ?? 0) / (book?.totalCopies ?? 0)) * 100).toFixed(0) : 0 }}%
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="card" *appHasRole="['Admin', 'Librarian']">
+          <div class="card-body">
+            <h5 class="card-title">Quick Actions</h5>
+            <div class="d-grid gap-2">
+              <a class="btn btn-primary" [class.disabled]="book?.availableCopies === 0" [attr.aria-disabled]="book?.availableCopies === 0"
+                 [attr.href]="book?.availableCopies === 0 ? null : '/borrow/borrow'" role="button">
+                <i class="fas fa-hand-holding-heart"></i> Borrow Book
+              </a>
+              <a class="btn btn-outline-primary" [attr.href]="'/reservations/create'" role="button">
+                <i class="fas fa-clock"></i> Reserve Book
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

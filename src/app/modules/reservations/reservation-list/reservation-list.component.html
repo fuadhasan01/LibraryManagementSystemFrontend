@@ -1,0 +1,179 @@
+<div class="reservation-list-container">
+  <!-- Header -->
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+      <h2><i class="fas fa-clock me-2"></i>Reservations</h2>
+      <p class="text-muted">Manage book reservations and queue positions</p>
+    </div>
+    <div class="d-flex gap-2">
+      <button class="btn btn-outline-warning" (click)="processExpired()" *appHasRole="['Admin']">
+        <i class="fas fa-clock"></i> Process Expired
+      </button>
+      <button class="btn btn-primary" (click)="createReservation()" *appHasRole="['Admin', 'Librarian']">
+        <i class="fas fa-plus"></i> New Reservation
+      </button>
+    </div>
+  </div>
+
+  <!-- Filters -->
+  <div class="card mb-4">
+    <div class="card-body">
+      <div class="row g-3">
+        <div class="col-md-4">
+          <label for="statusFilter" class="form-label">Filter by Status</label>
+          <select id="statusFilter" class="form-select" [(ngModel)]="selectedStatus" (change)="onStatusChange(selectedStatus)">
+            <option *ngFor="let status of statuses" [value]="status">
+              {{ status }}
+            </option>
+          </select>
+        </div>
+        <div class="col-md-5">
+          <label for="searchInput" class="form-label">Search</label>
+          <div class="input-group">
+            <input
+              type="text"
+              id="searchInput"
+              class="form-control"
+              placeholder="Search by book title or member name..."
+              [(ngModel)]="searchTerm"
+              (keyup.enter)="onSearch()"
+            >
+            <button class="btn btn-outline-primary" (click)="onSearch()">
+              <i class="fas fa-search"></i>
+            </button>
+            <button class="btn btn-outline-secondary" (click)="clearSearch()" *ngIf="searchTerm">
+              <i class="fas fa-times"></i>
+            </button>
+          </div>
+        </div>
+        <div class="col-md-3 text-end">
+          <label class="form-label">&nbsp;</label>
+          <div>
+            <span class="badge bg-success me-1" *ngIf="getStatusCount('Active') > 0">
+              Active: {{ getStatusCount('Active') }}
+            </span>
+            <span class="badge bg-info me-1" *ngIf="getStatusCount('Fulfilled') > 0">
+              Fulfilled: {{ getStatusCount('Fulfilled') }}
+            </span>
+            <span class="badge bg-danger" *ngIf="getStatusCount('Expired') > 0">
+              Expired: {{ getStatusCount('Expired') }}
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Loading -->
+  <div *ngIf="isLoading" class="spinner-overlay">
+    <div class="spinner-border text-primary" role="status">
+      <span class="visually-hidden">Loading...</span>
+    </div>
+  </div>
+
+  <!-- Reservations Table -->
+  <div *ngIf="!isLoading">
+    <div *ngIf="reservations.length === 0" class="text-center py-5">
+      <i class="fas fa-clock fa-3x text-muted mb-3"></i>
+      <h5>No reservations found</h5>
+      <p class="text-muted">Try adjusting your filters or create a new reservation.</p>
+      <button class="btn btn-primary" (click)="createReservation()" *appHasRole="['Admin', 'Librarian']">
+        <i class="fas fa-plus"></i> Create Reservation
+      </button>
+    </div>
+
+    <div *ngIf="reservations.length > 0" class="table-container">
+      <div class="table-responsive">
+        <table class="table table-hover">
+          <thead>
+            <tr>
+              <th>Book</th>
+              <th>Member</th>
+              <th>Reservation Date</th>
+              <th>Expiry Date</th>
+              <th>Queue Position</th>
+              <th>Status</th>
+              <th class="text-center">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let reservation of reservations">
+              <td>
+                <strong>{{ reservation.bookTitle | truncate:40 }}</strong>
+                <br>
+                <small class="text-muted">{{ reservation.bookAuthor }}</small>
+              </td>
+              <td>
+                {{ reservation.memberName }}
+                <br>
+                <small class="text-muted">{{ reservation.memberEmail }}</small>
+              </td>
+              <td>{{ reservation.reservationDate | date:'mediumDate' }}</td>
+              <td>
+                {{ reservation.expiryDate | date:'mediumDate' }}
+                <span *ngIf="reservation.isExpired" class="badge bg-danger ms-1">Expired</span>
+                <span *ngIf="!reservation.isExpired && reservation.status === 'Active'" class="badge bg-info ms-1">
+                  {{ reservation.daysUntilExpiry }} days left
+                </span>
+              </td>
+              <td>
+                <span class="badge bg-secondary">{{ reservation.queuePosition }}</span>
+              </td>
+              <td>
+                <span [class]="'badge ' + getStatusClass(reservation.status)">
+                  <i [class]="getStatusIcon(reservation.status)"></i>
+                  {{ reservation.statusDisplay }}
+                </span>
+              </td>
+              <td class="text-center">
+                <div class="btn-group btn-group-sm">
+                  <button *ngIf="reservation.status === 'Active'" 
+                          class="btn btn-outline-success" 
+                          (click)="updateStatus(reservation.id, 'Fulfilled')"
+                          title="Fulfill">
+                    <i class="fas fa-check"></i>
+                  </button>
+                  <button *ngIf="reservation.status === 'Active'" 
+                          class="btn btn-outline-danger" 
+                          (click)="cancelReservation(reservation.id)"
+                          title="Cancel">
+                    <i class="fas fa-times"></i>
+                  </button>
+                  <button *appHasRole="['Admin']"
+                          class="btn btn-outline-warning" 
+                          (click)="updateStatus(reservation.id, 'Cancelled')"
+                          title="Force Cancel">
+                    <i class="fas fa-ban"></i>
+                  </button>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Pagination -->
+      <div class="d-flex justify-content-between align-items-center mt-3">
+        <span class="text-muted">
+          Showing {{ ((currentPage - 1) * pageSize) + 1 }} - 
+          {{ Math.min(currentPage * pageSize, totalItems) }} of {{ totalItems }}
+        </span>
+        <nav>
+          <ul class="pagination mb-0">
+            <li class="page-item" [class.disabled]="currentPage === 1">
+              <a class="page-link" (click)="onPageChange(currentPage - 1)">Previous</a>
+            </li>
+            <li class="page-item" *ngFor="let page of getPages()" 
+                [class.active]="page === currentPage">
+              <a class="page-link" (click)="onPageChange(page)" *ngIf="page !== -1">{{ page }}</a>
+              <span class="page-link" *ngIf="page === -1">…</span>
+            </li>
+            <li class="page-item" [class.disabled]="currentPage === totalPages">
+              <a class="page-link" (click)="onPageChange(currentPage + 1)">Next</a>
+            </li>
+          </ul>
+        </nav>
+      </div>
+    </div>
+  </div>
+</div>

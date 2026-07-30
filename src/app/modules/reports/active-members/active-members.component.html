@@ -1,0 +1,147 @@
+<div class="active-members-container">
+  <!-- Header -->
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+      <h2><i class="fas fa-user-graduate me-2"></i>Active Members</h2>
+      <p class="text-muted">Most engaged members based on borrowing activity</p>
+    </div>
+    <div class="d-flex gap-2">
+      <div class="btn-group" role="group">
+        <button class="btn btn-outline-primary btn-sm" 
+                [class.active]="limit === 5" 
+                (click)="changeLimit(5)">5</button>
+        <button class="btn btn-outline-primary btn-sm" 
+                [class.active]="limit === 10" 
+                (click)="changeLimit(10)">10</button>
+        <button class="btn btn-outline-primary btn-sm" 
+                [class.active]="limit === 20" 
+                (click)="changeLimit(20)">20</button>
+        <button class="btn btn-outline-primary btn-sm" 
+                [class.active]="limit === 50" 
+                (click)="changeLimit(50)">50</button>
+      </div>
+      <button class="btn btn-outline-primary" (click)="loadActiveMembers()" [disabled]="isLoading">
+        <i class="fas fa-sync-alt" [class.fa-spin]="isLoading"></i>
+      </button>
+    </div>
+  </div>
+
+  <!-- Search -->
+  <div class="card mb-4">
+    <div class="card-body">
+      <div class="row g-3">
+        <div class="col-md-8">
+          <div class="input-group">
+            <input
+              type="text"
+              class="form-control"
+              placeholder="Search by name, email, or membership number..."
+              [(ngModel)]="searchTerm"
+              (input)="onSearch()"
+            >
+            <button class="btn btn-outline-secondary" (click)="clearSearch()" *ngIf="searchTerm">
+              <i class="fas fa-times"></i>
+            </button>
+          </div>
+        </div>
+        <div class="col-md-4 text-end">
+          <span class="text-muted">
+            <i class="fas fa-users me-1"></i>
+            {{ filteredMembers.length }} of {{ activeMembers.length }} members
+          </span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Loading -->
+  <div *ngIf="isLoading" class="spinner-overlay">
+    <div class="spinner-border text-primary" role="status">
+      <span class="visually-hidden">Loading...</span>
+    </div>
+  </div>
+
+  <!-- Members Grid -->
+  <div *ngIf="!isLoading">
+    <div *ngIf="filteredMembers.length === 0" class="text-center py-5">
+      <i class="fas fa-user-graduate fa-3x text-muted mb-3"></i>
+      <h5>No members found</h5>
+      <p class="text-muted">Try adjusting your search or changing the limit.</p>
+    </div>
+
+    <div *ngIf="filteredMembers.length > 0" class="row g-4">
+      <div class="col-lg-6" *ngFor="let member of filteredMembers">
+        <div class="member-card">
+          <div class="member-rank">{{ getMemberRank(member.currentBorrows) }}</div>
+          <div class="member-content">
+            <div class="member-header">
+              <div class="member-info">
+                <h5 class="member-name">
+                  {{ member.memberName }}
+                  <span [class]="'badge ' + getActivityClass(member.totalBorrows)">
+                    {{ getActivityLevel(member.totalBorrows) }}
+                  </span>
+                </h5>
+                <p class="member-email"><i class="fas fa-envelope me-1"></i>{{ member.email }}</p>
+                <p class="member-membership">
+                  <i class="fas fa-id-card me-1"></i>{{ member.membershipNumber }}
+                </p>
+              </div>
+              <div class="member-status">
+                <i [class]="getStatusIcon(member.isActive)"></i>
+                <span [class.text-success]="member.isActive" [class.text-danger]="!member.isActive">
+                  {{ getStatusText(member.isActive) }}
+                </span>
+              </div>
+            </div>
+
+            <div class="member-stats">
+              <div class="stat-item">
+                <span class="stat-value">{{ member.totalBorrows }}</span>
+                <span class="stat-label">Total Borrows</span>
+              </div>
+              <div class="stat-item">
+                <span class="stat-value">{{ member.currentBorrows }}</span>
+                <span class="stat-label">Current Borrows</span>
+              </div>
+              <div class="stat-item">
+                <span class="stat-value">{{ member.totalReservations }}</span>
+                <span class="stat-label">Reservations</span>
+              </div>
+              <div class="stat-item">
+                <span class="stat-value text-danger">${{ member.outstandingFines.toFixed(2) }}</span>
+                <span class="stat-label">Fines</span>
+              </div>
+            </div>
+
+            <div class="activity-section">
+              <div class="activity-header">
+                <span class="activity-label">Borrowing Activity</span>
+                <span class="activity-date">
+                  Last active: {{ member.lastActivityDate | date:'mediumDate' }}
+                </span>
+              </div>
+              <div class="activity-bar">
+                <div class="bar-track">
+                  <div class="bar-fill" 
+                       [style.width.%]="getActivityWidth(member.totalBorrows)"
+                       [style.background]="getActivityColor(member.totalBorrows)"></div>
+                </div>
+              </div>
+            </div>
+
+            <div class="member-footer">
+              <span class="text-muted">
+                <i class="fas fa-clock me-1"></i>
+                Total fines: ${{ member.totalFines.toFixed(2) }}
+              </span>
+              <span class="badge bg-primary">
+                {{ member.isActive ? 'Active Member' : 'Inactive' }}
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

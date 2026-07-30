@@ -1,0 +1,42 @@
+<div class="logout-container">
+  <div class="logout-card">
+    <div class="logout-icon">
+      <i class="fas fa-sign-out-alt"></i>
+    </div>
+    
+    <h2>Logging Out</h2>
+    <p class="text-muted">You are being logged out of your account.</p>
+    
+    <div class="countdown-circle">
+      <svg viewBox="0 0 120 120">
+        <circle cx="60" cy="60" r="50" fill="none" stroke="#e2e8f0" stroke-width="8"/>
+        <circle cx="60" cy="60" r="50" fill="none" 
+                [attr.stroke]="'#2563eb'" 
+                stroke-width="8"
+                stroke-dasharray="314.159"
+                [attr.stroke-dashoffset]="314.159 - (314.159 * countdown / 5)"
+                stroke-linecap="round"
+                transform="rotate(-90 60 60)"/>
+      </svg>
+      <div class="countdown-text">
+        <span class="countdown-number">{{ countdown }}</span>
+        <span class="countdown-label">seconds</span>
+      </div>
+    </div>
+
+    <p class="text-muted small">
+      You will be redirected to the login page automatically.
+    </p>
+
+    <div class="logout-actions">
+      <button class="btn btn-danger btn-lg w-100" (click)="immediateLogout()">
+        <i class="fas fa-sign-out-alt me-2"></i>
+        Logout Now
+      </button>
+      <button class="btn btn-outline-secondary w-100 mt-2" (click)="cancelLogout()">
+        <i class="fas fa-times me-2"></i>
+        Cancel
+      </button>
+    </div>
+  </div>
+</div>

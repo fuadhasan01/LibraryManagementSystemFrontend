@@ -1,0 +1,128 @@
+<div class="popular-books-container">
+  <!-- Header -->
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+      <h2><i class="fas fa-star me-2"></i>Popular Books</h2>
+      <p class="text-muted">Most borrowed and highly requested books</p>
+    </div>
+    <div class="d-flex gap-2">
+      <div class="btn-group" role="group">
+        <button class="btn btn-outline-primary btn-sm" 
+                [class.active]="limit === 5" 
+                (click)="changeLimit(5)">5</button>
+        <button class="btn btn-outline-primary btn-sm" 
+                [class.active]="limit === 10" 
+                (click)="changeLimit(10)">10</button>
+        <button class="btn btn-outline-primary btn-sm" 
+                [class.active]="limit === 20" 
+                (click)="changeLimit(20)">20</button>
+        <button class="btn btn-outline-primary btn-sm" 
+                [class.active]="limit === 50" 
+                (click)="changeLimit(50)">50</button>
+      </div>
+      <button class="btn btn-outline-primary" (click)="loadPopularBooks()" [disabled]="isLoading">
+        <i class="fas fa-sync-alt" [class.fa-spin]="isLoading"></i>
+      </button>
+    </div>
+  </div>
+
+  <!-- Search -->
+  <div class="card mb-4">
+    <div class="card-body">
+      <div class="row g-3">
+        <div class="col-md-8">
+          <div class="input-group">
+            <input
+              type="text"
+              class="form-control"
+              placeholder="Search by title, author, or ISBN..."
+              [(ngModel)]="searchTerm"
+              (input)="onSearch()"
+            >
+            <button class="btn btn-outline-secondary" (click)="clearSearch()" *ngIf="searchTerm">
+              <i class="fas fa-times"></i>
+            </button>
+          </div>
+        </div>
+        <div class="col-md-4 text-end">
+          <span class="text-muted">
+            <i class="fas fa-book me-1"></i>
+            {{ filteredBooks.length }} of {{ popularBooks.length }} books
+          </span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Loading -->
+  <div *ngIf="isLoading" class="spinner-overlay">
+    <div class="spinner-border text-primary" role="status">
+      <span class="visually-hidden">Loading...</span>
+    </div>
+  </div>
+
+  <!-- Books Grid -->
+  <div *ngIf="!isLoading">
+    <div *ngIf="filteredBooks.length === 0" class="text-center py-5">
+      <i class="fas fa-star fa-3x text-muted mb-3"></i>
+      <h5>No books found</h5>
+      <p class="text-muted">Try adjusting your search or changing the limit.</p>
+    </div>
+
+    <div *ngIf="filteredBooks.length > 0" class="row g-4">
+      <div class="col-lg-6" *ngFor="let book of filteredBooks">
+        <div class="book-card">
+          <div class="book-rank">{{ getPopularityRank(book.popularityScore) }}</div>
+          <div class="book-content">
+            <div class="book-header">
+              <div class="book-info">
+                <h5 class="book-title">{{ book.title | truncate:60 }}</h5>
+                <p class="book-author"><i class="fas fa-user-edit me-1"></i>{{ book.author }}</p>
+              </div>
+              <div class="popularity-score" [class]="getPopularityColor(book.popularityScore)">
+                {{ book.popularityScore | number:'1.1-1' }}
+              </div>
+            </div>
+
+            <div class="book-details">
+              <div class="detail-item">
+                <span class="label">ISBN</span>
+                <span class="value">{{ book.isbn }}</span>
+              </div>
+              <div class="detail-item">
+                <span class="label">Copies</span>
+                <span class="value">{{ book.totalCopies }} total</span>
+              </div>
+              <div class="detail-item">
+                <span class="label">Available</span>
+                <span class="value" [class]="getAvailabilityClass(book.availableCopies)">
+                  <i [class]="getAvailabilityIcon(book.availableCopies)"></i>
+                  {{ book.availableCopies }}
+                </span>
+              </div>
+              <div class="detail-item">
+                <span class="label">Borrowed</span>
+                <span class="value">{{ book.borrowedCopies }}</span>
+              </div>
+              <div class="detail-item">
+                <span class="label">Borrows</span>
+                <span class="value text-primary">{{ book.totalBorrows }}</span>
+              </div>
+              <div class="detail-item">
+                <span class="label">Reservations</span>
+                <span class="value text-warning">{{ book.currentReservations }}</span>
+              </div>
+            </div>
+
+            <div class="popularity-bar">
+              <div class="bar-label">Popularity Score</div>
+              <div class="bar-track">
+                <div class="bar-fill" [style.width.%]="getPopularityWidth(book.popularityScore)"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,310 @@
+<div class="member-details-container">
+  <!-- Loading -->
+  <div *ngIf="isLoading" class="spinner-overlay">
+    <div class="spinner-border text-primary" role="status">
+      <span class="visually-hidden">Loading...</span>
+    </div>
+  </div>
+
+  <!-- Member Details -->
+  <div *ngIf="!isLoading && member">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-start mb-4">
+      <div>
+        <button class="btn btn-link text-decoration-none ps-0" (click)="goBack()">
+          <i class="fas fa-arrow-left"></i> Back to Members
+        </button>
+        <div class="d-flex align-items-center mt-2">
+          <h2 class="mb-0 me-3">{{ member?.fullName }}</h2>
+          <span [class]="'badge ' + getStatusClass(member?.isActive ?? false)">
+            {{ getStatusText(member?.isActive ?? false) }}
+          </span>
+        </div>
+        <p class="text-muted">{{ member?.email }}</p>
+      </div>
+      <div class="btn-group" *appHasRole="['Admin']">
+        <button class="btn btn-outline-primary" (click)="editMember()">
+          <i class="fas fa-edit"></i> Edit
+        </button>
+        <button class="btn btn-outline-danger" (click)="deleteMember()">
+          <i class="fas fa-trash"></i> Delete
+        </button>
+        <button class="btn" [class.btn-outline-success]="!member?.isActive" 
+                [class.btn-outline-warning]="member?.isActive"
+                (click)="toggleMemberStatus()">
+          <i class="fas" [class.fa-user-check]="!member?.isActive" [class.fa-user-slash]="member?.isActive"></i>
+          {{ member?.isActive ? 'Deactivate' : 'Activate' }}
+        </button>
+      </div>
+    </div>
+
+    <div class="row">
+      <!-- Main Info -->
+      <div class="col-lg-8">
+        <!-- Member Information -->
+        <div class="card mb-4">
+          <div class="card-body">
+            <h5 class="card-title">Member Information</h5>
+            <div class="row">
+              <div class="col-md-6">
+                <div class="info-item">
+                  <label>Membership Number</label>
+                  <p><strong>{{ member?.membershipNumber }}</strong></p>
+                </div>
+                <div class="info-item">
+                  <label>Email</label>
+                  <p>{{ member?.email }}</p>
+                </div>
+                <div class="info-item">
+                  <label>Phone</label>
+                  <p>{{ member?.phone }}</p>
+                </div>
+              </div>
+              <div class="col-md-6">
+                <div class="info-item">
+                  <label>Member Since</label>
+                  <p>{{ member?.membershipDate | date:'mediumDate' }}</p>
+                </div>
+                <div class="info-item" *ngIf="member?.membershipExpiryDate">
+                  <label>Membership Expires</label>
+                  <p>{{ member?.membershipExpiryDate | date:'mediumDate' }}</p>
+                </div>
+                <div class="info-item">
+                  <label>Address</label>
+                  <p>{{ member?.address || 'N/A' }}</p>
+                </div>
+              </div>
+            </div>
+            <div class="row mt-3">
+              <div class="col-md-12">
+                <div class="info-item">
+                  <label>Borrowing Status</label>
+                  <p>
+                    <i [class]="getStatusIcon(canBorrow())"></i>
+                    <span [class.text-success]="canBorrow()" [class.text-danger]="!canBorrow()">
+                      {{ canBorrow() ? 'Eligible to borrow' : 'Not eligible to borrow' }}
+                    </span>
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Borrowing Statistics -->
+        <div class="card mb-4">
+          <div class="card-body">
+            <h5 class="card-title">Borrowing Statistics</h5>
+            <div class="row">
+              <div class="col-md-4">
+                <div class="stat-card">
+                  <div class="stat-number">{{ member?.currentBorrowedCount }}</div>
+                  <div class="stat-label">Current Borrows</div>
+                </div>
+              </div>
+              <div class="col-md-4">
+                <div class="stat-card">
+                  <div class="stat-number">{{ member?.maxBooksAllowed }}</div>
+                  <div class="stat-label">Max Allowed</div>
+                </div>
+              </div>
+              <div class="col-md-4">
+                <div class="stat-card">
+                  <div class="stat-number" [class.text-danger]="member?.outstandingFines ?? 0 > 0">
+                    ${{ member?.outstandingFines | number:'1.2-2' }}
+                  </div>
+                  <div class="stat-label">Outstanding Fines</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Current Borrows -->
+        <div class="card mb-4">
+          <div class="card-header">
+            <h5 class="mb-0">Current Borrows</h5>
+          </div>
+          <div class="card-body">
+            <div *ngIf="currentBorrows.length === 0" class="text-center py-3">
+              <i class="fas fa-book fa-2x text-muted mb-2"></i>
+              <p class="text-muted">No active borrows</p>
+            </div>
+            <div *ngIf="currentBorrows.length > 0">
+              <div class="table-responsive">
+                <table class="table table-hover">
+                  <thead>
+                    <tr>
+                      <th>Book</th>
+                      <th>Borrow Date</th>
+                      <th>Due Date</th>
+                      <th>Status</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr *ngFor="let borrow of currentBorrows">
+                      <td>
+                        <strong>{{ borrow.bookTitle }}</strong>
+                        <br>
+                        <small class="text-muted">{{ borrow.bookAuthor }}</small>
+                      </td>
+                      <td>{{ borrow.borrowDate | date:'mediumDate' }}</td>
+                      <td>
+                        {{ borrow.dueDate | date:'mediumDate' }}
+                        <span *ngIf="borrow.isOverdue" class="badge badge-danger ms-2">
+                          {{ borrow.daysOverdue }} days overdue
+                        </span>
+                      </td>
+                      <td>
+                        <span [class]="'badge ' + getBorrowStatusClass(borrow.status)">
+                          {{ borrow.statusDisplay }}
+                        </span>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Borrow History -->
+        <div class="card">
+          <div class="card-header">
+            <h5 class="mb-0">Borrow History</h5>
+          </div>
+          <div class="card-body">
+            <div *ngIf="isLoadingHistory" class="text-center py-3">
+              <div class="spinner-border spinner-border-sm text-primary" role="status">
+                <span class="visually-hidden">Loading...</span>
+              </div>
+            </div>
+            <div *ngIf="!isLoadingHistory && borrowHistory.length === 0" class="text-center py-3">
+              <i class="fas fa-history fa-2x text-muted mb-2"></i>
+              <p class="text-muted">No borrow history</p>
+            </div>
+            <div *ngIf="!isLoadingHistory && borrowHistory.length > 0">
+              <div class="table-responsive">
+                <table class="table table-sm">
+                  <thead>
+                    <tr>
+                      <th>Book</th>
+                      <th>Borrowed</th>
+                      <th>Returned</th>
+                      <th>Status</th>
+                      <th>Fine</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr *ngFor="let borrow of borrowHistory | slice:0:10">
+                      <td>{{ borrow.bookTitle | truncate:30 }}</td>
+                      <td>{{ borrow.borrowDate | date:'shortDate' }}</td>
+                      <td>{{ borrow.returnDate ? (borrow.returnDate | date:'shortDate') : '-' }}</td>
+                      <td>
+                        <span [class]="'badge ' + getBorrowStatusClass(borrow.status)">
+                          {{ borrow.statusDisplay }}
+                        </span>
+                      </td>
+                      <td>
+                        <span *ngIf="borrow.fineAmount && borrow.fineAmount > 0" class="text-danger">
+                          ${{ borrow.fineAmount | number:'1.2-2' }}
+                        </span>
+                        <span *ngIf="!borrow.fineAmount || borrow.fineAmount === 0">-</span>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+                <p *ngIf="borrowHistory.length > 10" class="text-muted small">
+                  Showing 10 of {{ borrowHistory.length }} records
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Sidebar -->
+      <div class="col-lg-4">
+        <!-- Quick Stats -->
+        <div class="card mb-4">
+          <div class="card-body">
+            <h5 class="card-title">Quick Stats</h5>
+
+            <div class="quick-stats">
+
+              <div class="stat-item">
+                <span class="stat-label">Total Borrows</span>
+                <span class="stat-value">
+                  {{ borrowHistory.length }}
+                </span>
+              </div>
+
+              <div class="stat-item">
+                <span class="stat-label">Total Fines</span>
+                <span class="stat-value text-danger">
+                  ${{ totalFines | number:'1.2-2' }}
+                </span>
+              </div>
+
+              <div class="stat-item">
+                <span class="stat-label">Borrow Limit Used</span>
+
+                <span
+                  class="stat-value"
+                  [class.text-danger]="
+                    (member?.currentBorrowedCount ?? 0) >=
+                    (member?.maxBooksAllowed ?? 0)
+                  "
+                >
+                  {{ member?.currentBorrowedCount ?? 0 }} /
+                  {{ member?.maxBooksAllowed ?? 0 }}
+                </span>
+              </div>
+
+              <div class="stat-item">
+                <span class="stat-label">Remaining Borrows</span>
+
+                <span
+                  class="stat-value"
+                  [class.text-success]="
+                    (member?.maxBooksAllowed ?? 0) -
+                    (member?.currentBorrowedCount ?? 0) > 0
+                  "
+                >
+                  {{
+                    (member?.maxBooksAllowed ?? 0) -
+                    (member?.currentBorrowedCount ?? 0)
+                  }}
+                </span>
+              </div>
+
+            </div>
+          </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="card" *appHasRole="['Admin', 'Librarian']">
+          <div class="card-body">
+            <h5 class="card-title">Quick Actions</h5>
+            <div class="d-grid gap-2">
+              <button class="btn btn-primary" 
+                      [disabled]="!canBorrow()" 
+                      (click)="router.navigate(['/borrow/borrow'])">
+                <i class="fas fa-hand-holding-heart"></i> Borrow Book
+              </button>
+              <button class="btn btn-outline-primary" 
+                      [disabled]="!member?.isActive"
+                      (click)="router.navigate(['/reservations/create'])">
+                <i class="fas fa-clock"></i> Create Reservation
+              </button>
+              <button class="btn btn-outline-info" 
+                      (click)="router.navigate(['/borrow/history'], { queryParams: { memberId: member?.id } })">
+                <i class="fas fa-history"></i> View Full History
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

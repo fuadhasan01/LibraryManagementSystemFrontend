@@ -1,0 +1,223 @@
+<div class="borrow-book-container">
+  <div class="card">
+    <div class="card-header">
+      <h4 class="mb-0">
+        <i class="fas fa-hand-holding-heart me-2"></i>
+        Borrow Book
+      </h4>
+      <p class="text-muted mb-0">Issue a book to a library member</p>
+    </div>
+
+    <div class="card-body">
+      <!-- Loading -->
+      <div *ngIf="isLoading" class="spinner-overlay">
+        <div class="spinner-border text-primary" role="status">
+          <span class="visually-hidden">Loading...</span>
+        </div>
+      </div>
+
+      <!-- Form -->
+      <form *ngIf="!isLoading" [formGroup]="borrowForm" (ngSubmit)="onSubmit()">
+        <!-- Book Selection -->
+        <div class="row mb-4">
+          <div class="col-md-12">
+            <label for="bookSearch" class="form-label">Search Book <span class="text-danger">*</span></label>
+            <input
+              type="text"
+              id="bookSearch"
+              class="form-control"
+              placeholder="Type to search books by title, author, or ISBN..."
+              (input)="filterBooks($event)"
+              [disabled]="isSubmitting"
+            >
+          </div>
+        </div>
+
+        <div class="row">
+          <!-- Book Selection Dropdown -->
+          <div class="col-md-6 mb-3">
+            <label for="bookId" class="form-label">Select Book <span class="text-danger">*</span></label>
+            <select
+              id="bookId"
+              class="form-select"
+              formControlName="bookId"
+              [class.is-invalid]="borrowForm.get('bookId')?.invalid && borrowForm.get('bookId')?.touched"
+              [disabled]="isSubmitting"
+            >
+              <option value="">-- Select a book --</option>
+              <option *ngFor="let book of filteredBooks" [value]="book.id">
+                {{ book.title }} - {{ book.author }} ({{ book.availableCopies }} available)
+              </option>
+            </select>
+            <div class="invalid-feedback" *ngIf="borrowForm.get('bookId')?.invalid && borrowForm.get('bookId')?.touched">
+              Please select a book
+            </div>
+          </div>
+
+          <!-- Member Selection Dropdown -->
+          <div class="col-md-6 mb-3">
+            <label for="memberId" class="form-label">Select Member <span class="text-danger">*</span></label>
+            <select
+              id="memberId"
+              class="form-select"
+              formControlName="memberId"
+              [class.is-invalid]="borrowForm.get('memberId')?.invalid && borrowForm.get('memberId')?.touched"
+              [disabled]="isSubmitting"
+            >
+              <option value="">-- Select a member --</option>
+              <option *ngFor="let member of filteredMembers" [value]="member.id">
+                {{ member.fullName }} - {{ member.email }} ({{ member.currentBorrowedCount }}/{{ member.maxBooksAllowed }})
+              </option>
+            </select>
+            <div class="invalid-feedback" *ngIf="borrowForm.get('memberId')?.invalid && borrowForm.get('memberId')?.touched">
+              Please select a member
+            </div>
+          </div>
+        </div>
+
+        <!-- Selected Book Details -->
+        <div *ngIf="selectedBook" class="selected-info-card mb-3">
+          <div class="row">
+            <div class="col-md-8">
+              <h6 class="text-primary">{{ selectedBook?.title }}</h6>
+              <p class="mb-1"><strong>Author:</strong> {{ selectedBook?.author }}</p>
+              <p class="mb-1"><strong>ISBN:</strong> {{ selectedBook?.isbn }}</p>
+              <p class="mb-0">
+                <strong>Availability:</strong>
+                <span [class]="selectedBook?.availableCopies ?? 0 > 0 ? 'text-success' : 'text-danger'">
+                  {{ selectedBook?.availableCopies ?? 0 }} / {{ selectedBook?.totalCopies ?? 0 }} copies available
+                </span>
+              </p>
+            </div>
+            <div class="col-md-4 text-end">
+              <span class="badge" [class.badge-success]="selectedBook?.availableCopies ?? 0 > 0" [class.badge-danger]="selectedBook?.availableCopies ?? 0 === 0">
+                <i [class]="selectedBook?.availableCopies ?? 0 > 0 ? 'fas fa-check-circle' : 'fas fa-times-circle'"></i>
+                {{ selectedBook?.availableCopies ?? 0 > 0 ? 'Available' : 'Not Available' }}
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Selected Member Details -->
+        <div *ngIf="selectedMember" class="selected-info-card mb-3">
+          <div class="row">
+            <div class="col-md-8">
+              <h6 class="text-primary">{{ selectedMember?.fullName }}</h6>
+              <p class="mb-1"><strong>Email:</strong> {{ selectedMember?.email }}</p>
+              <p class="mb-1"><strong>Membership:</strong> {{ selectedMember?.membershipNumber }}</p>
+              <p class="mb-0">
+                <strong>Borrowing Status:</strong>
+                <span [class]="selectedMember?.canBorrow ? 'text-success' : 'text-danger'">
+                  {{ selectedMember?.canBorrow ? 'Eligible to borrow' : 'Not eligible to borrow' }}
+                </span>
+              </p>
+            </div>
+            <div class="col-md-4 text-end">
+              <div class="borrow-stats">
+                <div>
+                  <span class="stat-label">Current</span>
+                  <span class="stat-value">{{ selectedMember?.currentBorrowedCount }}</span>
+                </div>
+                <div>
+                  <span class="stat-label">Limit</span>
+                  <span class="stat-value">{{ selectedMember?.maxBooksAllowed }}</span>
+                </div>
+                <div>
+                  <span class="stat-label">Fines</span>
+                  <span class="stat-value text-danger">${{ selectedMember?.outstandingFines | number:'1.2-2' }}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Loan Period -->
+        <div class="row">
+          <div class="col-md-6 mb-3">
+            <label for="loanPeriodDays" class="form-label">Loan Period (Days) <span class="text-danger">*</span></label>
+            <input
+              type="number"
+              id="loanPeriodDays"
+              class="form-control"
+              formControlName="loanPeriodDays"
+              [class.is-invalid]="borrowForm.get('loanPeriodDays')?.invalid && borrowForm.get('loanPeriodDays')?.touched"
+              min="1"
+              max="30"
+              [disabled]="isSubmitting"
+            >
+            <div class="invalid-feedback" *ngIf="borrowForm.get('loanPeriodDays')?.invalid && borrowForm.get('loanPeriodDays')?.touched">
+              Please enter a valid loan period (1-30 days)
+            </div>
+            <small class="text-muted">Standard loan period is 14 days</small>
+          </div>
+
+          <div class="col-md-6 mb-3">
+            <label for="dueDate" class="form-label">Due Date</label>
+            <input
+              type="date"
+              id="dueDate"
+              class="form-control"
+              [value]="getDueDate()"
+              readonly
+              disabled
+            >
+            <small class="text-muted">Calculated based on loan period</small>
+          </div>
+        </div>
+
+        <!-- Notes -->
+        <div class="row">
+          <div class="col-md-12 mb-3">
+            <label for="notes" class="form-label">Notes</label>
+            <textarea
+              id="notes"
+              class="form-control"
+              formControlName="notes"
+              rows="2"
+              placeholder="Add any additional notes..."
+              [disabled]="isSubmitting"
+            ></textarea>
+          </div>
+        </div>
+
+        <!-- Validation Summary -->
+        <div *ngIf="!canBorrowBook() && (selectedBook || selectedMember)" class="alert alert-warning">
+          <i class="fas fa-exclamation-triangle me-2"></i>
+          <span *ngIf="selectedBook && selectedBook.availableCopies === 0">
+            This book is currently not available for borrowing.
+          </span>
+          <span *ngIf="selectedMember && !selectedMember.canBorrow">
+            This member is not eligible to borrow books.
+            <span *ngIf="selectedMember && selectedMember.outstandingFines > 0">
+              Outstanding fines: ${{ selectedMember.outstandingFines | number:'1.2-2' }}
+            </span>
+
+            <span *ngIf="selectedMember &&
+                        selectedMember.currentBorrowedCount >= selectedMember.maxBooksAllowed">
+              Borrowing limit reached
+              ({{ selectedMember.currentBorrowedCount }}/{{ selectedMember.maxBooksAllowed }})
+            </span>
+          </span>
+        </div>
+
+        <!-- Form Actions -->
+        <div class="d-flex justify-content-end gap-2 mt-4 pt-3 border-top">
+          <button type="button" class="btn btn-secondary" (click)="resetForm()" [disabled]="isSubmitting">
+            <i class="fas fa-undo"></i> Reset
+          </button>
+          <button type="submit" class="btn btn-primary" 
+                  [disabled]="borrowForm.invalid || isSubmitting || !canBorrowBook()">
+            <span *ngIf="!isSubmitting">
+              <i class="fas fa-hand-holding-heart"></i>
+              Borrow Book
+            </span>
+            <span *ngIf="isSubmitting">
+              <span class="spinner-border spinner-border-sm me-2" role="status"></span>
+              Processing...
+            </span>
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
