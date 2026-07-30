@@ -1,6 +1,7 @@
 .app-container {
   display: flex;
   min-height: calc(100vh - 56px);
+  margin-top: 56px;   // push content below the fixed navbar
 }
 
 .main-content {

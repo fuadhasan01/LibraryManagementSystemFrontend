@@ -1,0 +1,9 @@
+.navbar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 56px;
+  z-index: 1001;   // must stay above sidebar's z-index: 998
+  background: #fff; // or whatever your navbar bg is — set explicitly so content doesn't show through
+}
