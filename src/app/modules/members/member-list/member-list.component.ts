@@ -94,6 +94,10 @@ export class MemberListComponent implements OnInit, OnDestroy {
     this.router.navigate(['/members', id]);
   }
 
+  viewBorrowHistory(id: string): void {
+    this.router.navigate(['/borrow/history'], { queryParams: { memberId: id } });
+  }
+
   deleteMember(id: string): void {
     if (confirm('Are you sure you want to delete this member?')) {
       const sub = this.memberService.deleteMember(id).subscribe({
@@ -116,4 +120,50 @@ export class MemberListComponent implements OnInit, OnDestroy {
   getStatusText(isActive: boolean): string {
     return isActive ? 'Active' : 'Inactive';
   }
+
+  getInitials(member: Member): string {
+    if (!member) return '';
+    return `${member.firstName.charAt(0)}${member.lastName.charAt(0)}`.toUpperCase();
+  }
+
+  getPages(): number[] {
+    const totalPages = Math.ceil(this.totalItems / this.pageSize);
+    const pages: number[] = [];
+    const maxVisiblePages = 5;
+    
+    if (totalPages <= maxVisiblePages) {
+      for (let i = 1; i <= totalPages; i++) {
+        pages.push(i);
+      }
+    } else {
+      const startPage = Math.max(1, this.currentPage - 2);
+      const endPage = Math.min(totalPages, startPage + 4);
+      
+      if (startPage > 1) {
+        pages.push(1);
+        if (startPage > 2) {
+          pages.push(-1); // Ellipsis
+        }
+      }
+      
+      for (let i = startPage; i <= endPage; i++) {
+        pages.push(i);
+      }
+      
+      if (endPage < totalPages) {
+        if (endPage < totalPages - 1) {
+          pages.push(-1); // Ellipsis
+        }
+        pages.push(totalPages);
+      }
+    }
+    
+    return pages;
+  }
+
+  get totalPages(): number {
+    return Math.ceil(this.totalItems / this.pageSize);
+  }
+
+  Math = Math;
 }
