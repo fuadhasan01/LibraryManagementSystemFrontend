@@ -64,3 +64,8 @@ export interface UpdateBranchInventoryRequest {
   totalCopies: number;
   locationInBranch?: string;
 }
+
+export interface BranchListResponse {
+  data: Branch[];
+  total: number;
+}
