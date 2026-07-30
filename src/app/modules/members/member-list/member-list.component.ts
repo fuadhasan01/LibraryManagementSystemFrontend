@@ -9,7 +9,7 @@ import { Member } from 'src/app/models/member.model';
 @Component({
   selector: 'app-member-list',
   templateUrl: './member-list.component.html',
-  styleUrls: ['./member-list.component.scss']
+  styleUrls: ['./member-list.component.scss'],
 })
 export class MemberListComponent implements OnInit, OnDestroy {
   members: Member[] = [];
@@ -17,7 +17,7 @@ export class MemberListComponent implements OnInit, OnDestroy {
   currentPage = 1;
   pageSize = 10;
   searchTerm = '';
-  showActiveOnly = false;
+  showActiveOnly = true;
   isLoading = false;
   isAdmin = false;
   private subscriptions: Subscription[] = [];
@@ -26,7 +26,7 @@ export class MemberListComponent implements OnInit, OnDestroy {
     private memberService: MemberService,
     private authService: AuthService,
     private router: Router,
-    private notificationService: NotificationService
+    private notificationService: NotificationService,
   ) {}
 
   ngOnInit(): void {
@@ -35,27 +35,29 @@ export class MemberListComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
-    this.subscriptions.forEach(sub => sub.unsubscribe());
+    this.subscriptions.forEach((sub) => sub.unsubscribe());
   }
 
   loadMembers(): void {
     this.isLoading = true;
-    const sub = this.memberService.getMembers(
-      this.currentPage, 
-      this.pageSize, 
-      this.searchTerm, 
-      this.showActiveOnly
-    ).subscribe({
-      next: (response) => {
-        this.members = response.data;
-        this.totalItems = response.total;
-        this.isLoading = false;
-      },
-      error: (error) => {
-        this.isLoading = false;
-        this.notificationService.showError('Failed to load members');
-      }
-    });
+    const sub = this.memberService
+      .getMembers(
+        this.currentPage,
+        this.pageSize,
+        this.searchTerm,
+        this.showActiveOnly,
+      )
+      .subscribe({
+        next: (response) => {
+          this.members = response.data;
+          this.totalItems = response.total;
+          this.isLoading = false;
+        },
+        error: (error) => {
+          this.isLoading = false;
+          this.notificationService.showError('Failed to load members');
+        },
+      });
     this.subscriptions.push(sub);
   }
 
@@ -95,7 +97,9 @@ export class MemberListComponent implements OnInit, OnDestroy {
   }
 
   viewBorrowHistory(id: string): void {
-    this.router.navigate(['/borrow/history'], { queryParams: { memberId: id } });
+    this.router.navigate(['/borrow/history'], {
+      queryParams: { memberId: id },
+    });
   }
 
   deleteMember(id: string): void {
@@ -107,7 +111,7 @@ export class MemberListComponent implements OnInit, OnDestroy {
         },
         error: (error) => {
           this.notificationService.showError('Failed to delete member');
-        }
+        },
       });
       this.subscriptions.push(sub);
     }
@@ -130,7 +134,7 @@ export class MemberListComponent implements OnInit, OnDestroy {
     const totalPages = Math.ceil(this.totalItems / this.pageSize);
     const pages: number[] = [];
     const maxVisiblePages = 5;
-    
+
     if (totalPages <= maxVisiblePages) {
       for (let i = 1; i <= totalPages; i++) {
         pages.push(i);
@@ -138,18 +142,18 @@ export class MemberListComponent implements OnInit, OnDestroy {
     } else {
       const startPage = Math.max(1, this.currentPage - 2);
       const endPage = Math.min(totalPages, startPage + 4);
-      
+
       if (startPage > 1) {
         pages.push(1);
         if (startPage > 2) {
           pages.push(-1); // Ellipsis
         }
       }
-      
+
       for (let i = startPage; i <= endPage; i++) {
         pages.push(i);
       }
-      
+
       if (endPage < totalPages) {
         if (endPage < totalPages - 1) {
           pages.push(-1); // Ellipsis
@@ -157,7 +161,7 @@ export class MemberListComponent implements OnInit, OnDestroy {
         pages.push(totalPages);
       }
     }
-    
+
     return pages;
   }
 

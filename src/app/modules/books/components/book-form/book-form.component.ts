@@ -9,7 +9,7 @@ import { BookService } from 'src/app/core/services/book.service';
 @Component({
   selector: 'app-book-form',
   templateUrl: './book-form.component.html',
-  styleUrls: ['./book-form.component.scss']
+  styleUrls: ['./book-form.component.scss'],
 })
 export class BookFormComponent implements OnInit, OnDestroy {
   bookForm: FormGroup;
@@ -60,7 +60,8 @@ export class BookFormComponent implements OnInit, OnDestroy {
     'Economics',
     'Finance',
     'Marketing',
-    'Leadership'
+    'Leadership',
+    'Fiction',
   ];
 
   constructor(
@@ -68,23 +69,30 @@ export class BookFormComponent implements OnInit, OnDestroy {
     private route: ActivatedRoute,
     private router: Router,
     private bookService: BookService,
-    private notificationService: NotificationService
+    private notificationService: NotificationService,
   ) {
     this.bookForm = this.fb.group({
       title: ['', [Validators.required, Validators.maxLength(500)]],
       author: ['', [Validators.required, Validators.maxLength(200)]],
       isbn: ['', [Validators.required, Validators.pattern(/^[0-9-]+$/)]],
       publisher: ['', Validators.maxLength(200)],
-      publicationYear: ['', [Validators.required, Validators.min(1000), Validators.max(new Date().getFullYear() + 1)]],
+      publicationYear: [
+        '',
+        [
+          Validators.required,
+          Validators.min(1000),
+          Validators.max(new Date().getFullYear() + 1),
+        ],
+      ],
       genre: [''],
       description: ['', Validators.maxLength(2000)],
       totalCopies: ['', [Validators.required, Validators.min(1)]],
-      location: ['', Validators.maxLength(100)]
+      location: ['', Validators.maxLength(100)],
     });
   }
 
   ngOnInit(): void {
-    this.route.params.subscribe(params => {
+    this.route.params.subscribe((params) => {
       const id = params['id'];
       if (id) {
         this.isEditMode = true;
@@ -95,7 +103,7 @@ export class BookFormComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
-    this.subscriptions.forEach(sub => sub.unsubscribe());
+    this.subscriptions.forEach((sub) => sub.unsubscribe());
   }
 
   loadBook(id: string): void {
@@ -112,7 +120,7 @@ export class BookFormComponent implements OnInit, OnDestroy {
           genre: book.genre || '',
           description: book.description || '',
           totalCopies: book.totalCopies,
-          location: book.location || ''
+          location: book.location || '',
         });
         this.isLoading = false;
       },
@@ -120,7 +128,7 @@ export class BookFormComponent implements OnInit, OnDestroy {
         this.isLoading = false;
         this.notificationService.showError('Failed to load book details');
         this.router.navigate(['/books']);
-      }
+      },
     });
     this.subscriptions.push(sub);
   }
@@ -128,7 +136,7 @@ export class BookFormComponent implements OnInit, OnDestroy {
   onSubmit(): void {
     if (this.bookForm.invalid) {
       // Mark all fields as touched to show validation errors
-      Object.keys(this.bookForm.controls).forEach(key => {
+      Object.keys(this.bookForm.controls).forEach((key) => {
         this.bookForm.get(key)?.markAsTouched();
       });
       return;
@@ -147,8 +155,10 @@ export class BookFormComponent implements OnInit, OnDestroy {
         },
         error: (error) => {
           this.isSubmitting = false;
-          this.notificationService.showError(error.message || 'Failed to update book');
-        }
+          this.notificationService.showError(
+            error.message || 'Failed to update book',
+          );
+        },
       });
       this.subscriptions.push(sub);
     } else {
@@ -161,8 +171,10 @@ export class BookFormComponent implements OnInit, OnDestroy {
         },
         error: (error) => {
           this.isSubmitting = false;
-          this.notificationService.showError(error.message || 'Failed to create book');
-        }
+          this.notificationService.showError(
+            error.message || 'Failed to create book',
+          );
+        },
       });
       this.subscriptions.push(sub);
     }
