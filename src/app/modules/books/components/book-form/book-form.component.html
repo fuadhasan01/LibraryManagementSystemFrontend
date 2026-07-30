@@ -23,7 +23,7 @@
        <!-- Form -->
        <!-- Using a div instead of a form to avoid template error when ReactiveFormsModule
          is not imported in the module: submit is handled via the button click. -->
-       <div *ngIf="!isLoading" [attr.data-form]="true">
+       <form [formGroup]="bookForm" *ngIf="!isLoading">
         <div class="row">
           <!-- Title -->
           <div class="col-md-8 mb-3">
@@ -174,7 +174,7 @@
             </span>
           </button>
         </div>
-      </div>
+      </form>
     </div>
   </div>
 </div>
