@@ -99,6 +99,11 @@
             text-align: center;
           }
 
+          .fa-chevron-down,
+          .fa-chevron-right {
+            transition: transform 0.3s ease;
+          }
+
           &:hover {
             background: rgba(255, 255, 255, 0.05);
             color: #e2e8f0;
@@ -127,8 +132,16 @@
 
           // Child nav link styles
           &.nav-link-child {
-            padding-left: 2.5rem;
-            font-size: 0.8rem;
+            padding-left: 2.75rem;
+            font-size: 0.813rem;
+            color: #94a3b8;
+
+            i {
+              font-size: 0.813rem;
+              width: 18px;
+              margin-right: 0.6rem;
+              color: #64748b;
+            }
 
             &::before {
               display: none;
@@ -137,26 +150,31 @@
             &.active {
               background: rgba(59, 130, 246, 0.1);
               color: #60a5fa;
+
+              i {
+                color: #60a5fa;
+              }
+            }
+
+            &:hover {
+              background: rgba(255, 255, 255, 0.05);
+              color: #e2e8f0;
+
+              i {
+                color: #94a3b8;
+              }
             }
           }
         }
 
         // Child nav container
         .child-nav {
-          padding-left: 0.5rem;
-          margin-top: 0.25rem;
+          padding-left: 0;
+          margin-top: 0.125rem;
+          margin-bottom: 0.25rem;
 
           .nav-item {
-            .nav-link {
-              padding: 0.4rem 1rem 0.4rem 2.5rem;
-              font-size: 0.8rem;
-
-              i {
-                font-size: 0.8rem;
-                width: 16px;
-                margin-right: 0.5rem;
-              }
-            }
+            margin-bottom: 0.125rem;
           }
         }
       }
@@ -366,6 +384,10 @@
               &.active {
                 background: rgba(59, 130, 246, 0.15);
                 color: #60a5fa;
+
+                i {
+                  color: #60a5fa;
+                }
               }
             }
           }

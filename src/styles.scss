@@ -33,12 +33,12 @@ body {
 
 .main-content {
   flex: 1;
-  padding: 2rem;
   transition: margin-left 0.3s ease;
 }
 
 .main-content.with-sidebar {
   margin-left: 250px;
+  padding: 2rem;
 }
 
 /* Cards */

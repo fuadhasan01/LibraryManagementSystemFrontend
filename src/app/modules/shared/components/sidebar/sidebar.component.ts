@@ -79,8 +79,34 @@ export class SidebarComponent implements OnInit, OnDestroy {
     {
       label: 'Reports',
       icon: 'fa-file-alt',
-      route: '/reports',
       roles: ['Admin', 'Librarian'],
+      expanded: false,
+      children: [
+        {
+          label: 'Dashboard',
+          icon: 'fa-chart-pie',
+          route: '/reports',
+          roles: ['Admin', 'Librarian'],
+        },
+        {
+          label: 'Popular Books',
+          icon: 'fa-star',
+          route: '/reports/popular-books',
+          roles: ['Admin', 'Librarian'],
+        },
+        {
+          label: 'Active Members',
+          icon: 'fa-user-graduate',
+          route: '/reports/active-members',
+          roles: ['Admin', 'Librarian'],
+        },
+        {
+          label: 'Overdue Books',
+          icon: 'fa-exclamation-triangle',
+          route: '/reports/overdue',
+          roles: ['Admin', 'Librarian'],
+        },
+      ],
     },
   ];
 
@@ -124,12 +150,20 @@ export class SidebarComponent implements OnInit, OnDestroy {
         return 0;
       case 'Borrow / Return':
         return 0;
+      case 'Reports':
+        return 0;
       default:
         return 0;
     }
   }
 
   toggleDropdown(item: MenuItem): void {
+    // Close other open dropdowns
+    this.menuItems.forEach((menu) => {
+      if (menu !== item && menu.children) {
+        menu.expanded = false;
+      }
+    });
     item.expanded = !item.expanded;
   }
 
@@ -169,8 +203,13 @@ export class SidebarComponent implements OnInit, OnDestroy {
     return this.hasRole(item.roles);
   }
 
-  // Track expanded state for each menu item
   isExpanded(item: MenuItem): boolean {
     return item.expanded || false;
+  }
+
+  // Helper method to check if any child is active (to keep parent expanded)
+  isAnyChildActive(item: MenuItem): boolean {
+    if (!item.children) return false;
+    return item.children.some((child) => this.router.url === child.route);
   }
 }

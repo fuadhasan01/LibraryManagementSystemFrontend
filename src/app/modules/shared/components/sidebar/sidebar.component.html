@@ -8,13 +8,12 @@
 
   <nav class="sidebar-nav">
     <ul class="nav flex-column">
-      <!-- Regular Menu Items -->
       <li class="nav-item" *ngFor="let item of menuItems">
         <!-- Parent Item with Children (Dropdown) -->
         <ng-container *ngIf="item.children && shouldShowItem(item)">
           <a
             class="nav-link"
-            [class.active]="isParentActive(item)"
+            [class.active]="isParentActive(item) || isAnyChildActive(item)"
             (click)="toggleDropdown(item)"
             role="button"
           >
