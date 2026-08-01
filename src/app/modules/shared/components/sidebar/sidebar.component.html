@@ -1,6 +1,6 @@
 <div class="sidebar">
   <div class="sidebar-header">
-    <div class="sidebar-brand">
+    <div class="sidebar-brand" (click)="closeSidebar()">
       <i class="fas fa-book-open"></i>
       <span>LibraryMS</span>
     </div>
@@ -8,18 +8,62 @@
 
   <nav class="sidebar-nav">
     <ul class="nav flex-column">
+      <!-- Regular Menu Items -->
       <li class="nav-item" *ngFor="let item of menuItems">
-        <a class="nav-link" 
-           [routerLink]="item.route" 
-           routerLinkActive="active"
-           [routerLinkActiveOptions]="{ exact: true }"
-           *appHasRole="item.roles">
-          <i [class]="'fas ' + item.icon"></i>
-          <span>{{ item.label }}</span>
-          <span class="badge" *ngIf="getBadgeCount(item.label) > 0">
-            {{ getBadgeCount(item.label) }}
-          </span>
-        </a>
+        <!-- Parent Item with Children (Dropdown) -->
+        <ng-container *ngIf="item.children && shouldShowItem(item)">
+          <a
+            class="nav-link"
+            [class.active]="isParentActive(item)"
+            (click)="toggleDropdown(item)"
+            role="button"
+          >
+            <i [class]="'fas ' + item.icon"></i>
+            <span>{{ item.label }}</span>
+            <i
+              class="fas"
+              [class.fa-chevron-down]="isExpanded(item)"
+              [class.fa-chevron-right]="!isExpanded(item)"
+              style="margin-left: auto; font-size: 0.75rem"
+            ></i>
+            <span class="badge" *ngIf="getBadgeCount(item.label) > 0">
+              {{ getBadgeCount(item.label) }}
+            </span>
+          </a>
+          <!-- Child Items -->
+          <ul class="nav flex-column child-nav" *ngIf="isExpanded(item)">
+            <li class="nav-item" *ngFor="let child of item.children">
+              <a
+                class="nav-link nav-link-child"
+                [routerLink]="child.route"
+                routerLinkActive="active"
+                (click)="closeSidebar()"
+                *appHasRole="child.roles"
+              >
+                <i [class]="'fas ' + child.icon"></i>
+                <span>{{ child.label }}</span>
+              </a>
+            </li>
+          </ul>
+        </ng-container>
+
+        <!-- Regular Item (No Children) -->
+        <ng-container *ngIf="!item.children && shouldShowItem(item)">
+          <a
+            class="nav-link"
+            [routerLink]="item.route"
+            routerLinkActive="active"
+            [routerLinkActiveOptions]="{ exact: true }"
+            (click)="closeSidebar()"
+            *appHasRole="item.roles"
+          >
+            <i [class]="'fas ' + item.icon"></i>
+            <span>{{ item.label }}</span>
+            <span class="badge" *ngIf="getBadgeCount(item.label) > 0">
+              {{ getBadgeCount(item.label) }}
+            </span>
+          </a>
+        </ng-container>
       </li>
     </ul>
   </nav>
@@ -40,3 +84,6 @@
     </button>
   </div>
 </div>
+
+<!-- Sidebar Overlay for Mobile -->
+<div class="sidebar-overlay" (click)="closeSidebar()"></div>

@@ -1,7 +1,6 @@
 <!-- Sidebar Overlay for Mobile -->
 <div class="sidebar-overlay" (click)="closeSidebar()"></div>
 
-<app-navbar *ngIf="isLoggedIn"></app-navbar>
 <div class="app-container">
   <app-sidebar *ngIf="isLoggedIn"></app-sidebar>
   <main class="main-content" [class.with-sidebar]="isLoggedIn">

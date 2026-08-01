@@ -1,7 +1,6 @@
 .app-container {
   display: flex;
-  min-height: calc(100vh - 56px);
-  margin-top: 56px;   // push content below the fixed navbar
+  min-height: 100vh;
 }
 
 .main-content {
@@ -14,8 +13,9 @@
     margin-left: 250px;
   }
 }
+
+// Sidebar Overlay - positioned behind sidebar
 .sidebar-overlay {
-  display: none;
   position: fixed;
   top: 0;
   left: 0;
@@ -23,12 +23,14 @@
   bottom: 0;
   background: rgba(0, 0, 0, 0.5);
   z-index: 999;
+  display: none;
 
   &.show {
     display: block;
   }
 }
 
+// Mobile responsive
 @media (max-width: 768px) {
   .main-content {
     padding: 1rem;
@@ -37,7 +39,8 @@
       margin-left: 0;
     }
   }
-    .sidebar-overlay.show {
+
+  .sidebar-overlay.show {
     display: block;
   }
 }

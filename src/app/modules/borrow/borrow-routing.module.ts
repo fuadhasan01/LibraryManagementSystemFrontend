@@ -9,30 +9,30 @@ const routes: Routes = [
   {
     path: '',
     redirectTo: 'borrow',
-    pathMatch: 'full'
+    pathMatch: 'full',
   },
   {
     path: 'borrow',
     component: BorrowBookComponent,
     canActivate: [RoleGuard],
-    data: { roles: ['Admin', 'Librarian'] }
+    data: { roles: ['Admin', 'Librarian'] },
   },
   {
     path: 'return',
     component: ReturnBookComponent,
     canActivate: [RoleGuard],
-    data: { roles: ['Admin', 'Librarian'] }
+    data: { roles: ['Admin', 'Librarian'] },
   },
   {
     path: 'history',
     component: BorrowHistoryComponent,
     canActivate: [RoleGuard],
-    data: { roles: ['Admin', 'Librarian'] }
-  }
+    data: { roles: ['Admin', 'Librarian'] },
+  },
 ];
 
 @NgModule({
   imports: [RouterModule.forChild(routes)],
-  exports: [RouterModule]
+  exports: [RouterModule],
 })
-export class BorrowRoutingModule { }
+export class BorrowRoutingModule {}

@@ -4,20 +4,84 @@ import { Subscription } from 'rxjs';
 import { AuthService } from 'src/app/core/services/auth.service';
 import { UserDto } from 'src/app/models/auth.model';
 
+interface MenuItem {
+  label: string;
+  icon: string;
+  route?: string;
+  roles: string[];
+  children?: MenuItem[];
+  expanded?: boolean;
+}
+
 @Component({
   selector: 'app-sidebar',
   templateUrl: './sidebar.component.html',
-  styleUrls: ['./sidebar.component.scss']
+  styleUrls: ['./sidebar.component.scss'],
 })
 export class SidebarComponent implements OnInit, OnDestroy {
-  menuItems = [
-    { label: 'Dashboard', icon: 'fa-chart-pie', route: '/dashboard', roles: ['Admin', 'Librarian', 'Member'] },
-    { label: 'Books', icon: 'fa-book', route: '/books', roles: ['Admin', 'Librarian', 'Member'] },
-    { label: 'Members', icon: 'fa-users', route: '/members', roles: ['Admin', 'Librarian'] },
-    { label: 'Branches', icon: 'fa-store', route: '/branches', roles: ['Admin', 'Librarian'] },
-    { label: 'Borrow/Return', icon: 'fa-exchange-alt', route: '/borrow', roles: ['Admin', 'Librarian'] },
-    { label: 'Reservations', icon: 'fa-clock', route: '/reservations', roles: ['Admin', 'Librarian'] },
-    { label: 'Reports', icon: 'fa-file-alt', route: '/reports', roles: ['Admin', 'Librarian'] }
+  menuItems: MenuItem[] = [
+    {
+      label: 'Dashboard',
+      icon: 'fa-chart-pie',
+      route: '/dashboard',
+      roles: ['Admin', 'Librarian', 'Member'],
+    },
+    {
+      label: 'Books',
+      icon: 'fa-book',
+      route: '/books',
+      roles: ['Admin', 'Librarian', 'Member'],
+    },
+    {
+      label: 'Members',
+      icon: 'fa-users',
+      route: '/members',
+      roles: ['Admin', 'Librarian'],
+    },
+    {
+      label: 'Branches',
+      icon: 'fa-store',
+      route: '/branches',
+      roles: ['Admin', 'Librarian'],
+    },
+    {
+      label: 'Borrow / Return',
+      icon: 'fa-exchange-alt',
+      roles: ['Admin', 'Librarian'],
+      expanded: false,
+      children: [
+        {
+          label: 'Borrow Book',
+          icon: 'fa-hand-holding-heart',
+          route: '/borrow/borrow',
+          roles: ['Admin', 'Librarian'],
+        },
+        {
+          label: 'Return Book',
+          icon: 'fa-undo-alt',
+          route: '/borrow/return',
+          roles: ['Admin', 'Librarian'],
+        },
+        {
+          label: 'Borrow History',
+          icon: 'fa-history',
+          route: '/borrow/history',
+          roles: ['Admin', 'Librarian'],
+        },
+      ],
+    },
+    {
+      label: 'Reservations',
+      icon: 'fa-clock',
+      route: '/reservations',
+      roles: ['Admin', 'Librarian'],
+    },
+    {
+      label: 'Reports',
+      icon: 'fa-file-alt',
+      route: '/reports',
+      roles: ['Admin', 'Librarian'],
+    },
   ];
 
   currentUser: UserDto | null = null;
@@ -25,19 +89,19 @@ export class SidebarComponent implements OnInit, OnDestroy {
 
   constructor(
     private authService: AuthService,
-    private router: Router
+    private router: Router,
   ) {}
 
   ngOnInit(): void {
     this.subscriptions.push(
-      this.authService.currentUser$.subscribe(user => {
+      this.authService.currentUser$.subscribe((user) => {
         this.currentUser = user;
-      })
+      }),
     );
   }
 
   ngOnDestroy(): void {
-    this.subscriptions.forEach(sub => sub.unsubscribe());
+    this.subscriptions.forEach((sub) => sub.unsubscribe());
   }
 
   getUserName(): string {
@@ -55,18 +119,29 @@ export class SidebarComponent implements OnInit, OnDestroy {
   }
 
   getBadgeCount(menuLabel: string): number {
-    // This method can be extended to show notification counts
-    // For example, show count of overdue books, pending reservations, etc.
     switch (menuLabel) {
       case 'Reservations':
-        // Could fetch pending reservation count
         return 0;
-      case 'Borrow/Return':
-        // Could fetch overdue items count
+      case 'Borrow / Return':
         return 0;
       default:
         return 0;
     }
+  }
+
+  toggleDropdown(item: MenuItem): void {
+    item.expanded = !item.expanded;
+  }
+
+  isChildActive(childRoute: string): boolean {
+    return this.router.url === childRoute;
+  }
+
+  isParentActive(item: MenuItem): boolean {
+    if (item.children) {
+      return item.children.some((child) => this.router.url === child.route);
+    }
+    return this.router.url === item.route;
   }
 
   logout(): void {
@@ -74,19 +149,6 @@ export class SidebarComponent implements OnInit, OnDestroy {
     this.router.navigate(['/auth/login']);
   }
 
-  // Toggle sidebar on mobile
-  toggleSidebar(): void {
-    const sidebar = document.querySelector('.sidebar');
-    const overlay = document.querySelector('.sidebar-overlay');
-    if (sidebar) {
-      sidebar.classList.toggle('open');
-    }
-    if (overlay) {
-      overlay.classList.toggle('show');
-    }
-  }
-
-  // Close sidebar on mobile
   closeSidebar(): void {
     const sidebar = document.querySelector('.sidebar');
     const overlay = document.querySelector('.sidebar-overlay');
@@ -96,5 +158,19 @@ export class SidebarComponent implements OnInit, OnDestroy {
     if (overlay) {
       overlay.classList.remove('show');
     }
+  }
+
+  hasRole(roles: string[]): boolean {
+    if (!this.currentUser) return false;
+    return roles.includes(this.currentUser.role);
+  }
+
+  shouldShowItem(item: MenuItem): boolean {
+    return this.hasRole(item.roles);
+  }
+
+  // Track expanded state for each menu item
+  isExpanded(item: MenuItem): boolean {
+    return item.expanded || false;
   }
 }
