@@ -1,11 +1,26 @@
 <div class="return-book-container">
   <div class="card">
     <div class="card-header">
-      <h4 class="mb-0">
-        <i class="fas fa-undo-alt me-2"></i>
-        Return Book
-      </h4>
-      <p class="text-muted mb-0">Process book returns and calculate fines</p>
+      <div class="d-flex justify-content-between align-items-center">
+        <div>
+          <h4 class="mb-0">
+            <i class="fas fa-undo-alt me-2"></i>
+            Return Book
+          </h4>
+          <p class="text-muted mb-0">
+            Process book returns and calculate fines
+          </p>
+        </div>
+        <button
+          type="button"
+          class="btn btn-outline-primary btn-sm"
+          (click)="refreshData()"
+          [disabled]="isLoading"
+        >
+          <i class="fas fa-sync-alt" [class.fa-spin]="isLoading"></i>
+          Refresh
+        </button>
+      </div>
     </div>
 
     <div class="card-body">
@@ -18,10 +33,12 @@
 
       <!-- Form -->
       <form *ngIf="!isLoading" [formGroup]="returnForm" (ngSubmit)="onSubmit()">
-        <!-- Transaction Selection -->
+        <!-- Search -->
         <div class="row">
           <div class="col-md-12 mb-3">
-            <label for="transactionSearch" class="form-label">Search Borrowed Books</label>
+            <label for="transactionSearch" class="form-label"
+              >Search Borrowed Books</label
+            >
             <input
               type="text"
               id="transactionSearch"
@@ -29,33 +46,60 @@
               placeholder="Type to search by book title, member name, or email..."
               (input)="filterTransactions($event)"
               [disabled]="isSubmitting"
-            >
+            />
           </div>
         </div>
 
+        <!-- Transaction Selection -->
         <div class="row">
           <div class="col-md-12 mb-3">
-            <label for="transactionId" class="form-label">Select Borrowed Book <span class="text-danger">*</span></label>
+            <label for="transactionId" class="form-label">
+              Select Borrowed Book
+              <span class="text-danger">*</span>
+              <span
+                class="badge bg-info ms-2"
+                *ngIf="filteredTransactions.length > 0"
+              >
+                {{ filteredTransactions.length }} available
+              </span>
+            </label>
             <select
               id="transactionId"
               class="form-select"
               formControlName="transactionId"
-              [class.is-invalid]="returnForm.get('transactionId')?.invalid && returnForm.get('transactionId')?.touched"
-              [disabled]="isSubmitting"
+              [class.is-invalid]="
+                returnForm.get('transactionId')?.invalid &&
+                returnForm.get('transactionId')?.touched
+              "
+              [disabled]="isSubmitting || filteredTransactions.length === 0"
             >
               <option value="">-- Select a borrowed book --</option>
-              <option *ngFor="let transaction of filteredTransactions" [value]="transaction.id">
-                {{ transaction.bookTitle }} - {{ transaction.memberName }} 
-                ({{ transaction.statusDisplay }})
-                <span *ngIf="transaction.isOverdue"> - {{ transaction.daysOverdue }} days overdue</span>
+              <option
+                *ngFor="let transaction of filteredTransactions"
+                [value]="transaction.id"
+              >
+                {{ getTransactionDisplayText(transaction) }}
               </option>
             </select>
-            <div class="invalid-feedback" *ngIf="returnForm.get('transactionId')?.invalid && returnForm.get('transactionId')?.touched">
+            <div
+              class="invalid-feedback"
+              *ngIf="
+                returnForm.get('transactionId')?.invalid &&
+                returnForm.get('transactionId')?.touched
+              "
+            >
               Please select a borrowed book
             </div>
             <small class="text-muted" *ngIf="filteredTransactions.length === 0">
               <i class="fas fa-info-circle"></i>
               No borrowed books found. All books have been returned.
+              <button
+                type="button"
+                class="btn btn-link btn-sm p-0 ms-2"
+                (click)="refreshData()"
+              >
+                Refresh
+              </button>
             </small>
           </div>
         </div>
@@ -64,28 +108,48 @@
         <div *ngIf="selectedTransaction" class="selected-info-card mb-3">
           <div class="row">
             <div class="col-md-7">
-              <h6 class="text-primary">{{ selectedTransaction?.bookTitle }}</h6>
-              <p class="mb-1"><strong>Author:</strong> {{ selectedTransaction?.bookAuthor }}</p>
-              <p class="mb-1"><strong>Member:</strong> {{ selectedTransaction?.memberName }} ({{ selectedTransaction?.memberEmail }})</p>
-              <p class="mb-0"><strong>Borrowed:</strong> {{ selectedTransaction?.borrowDate | date:'medium' }}</p>
-              <p class="mb-0"><strong>Due Date:</strong> {{ selectedTransaction?.dueDate | date:'medium' }}</p>
+              <h6 class="text-primary">{{ selectedTransaction.bookTitle }}</h6>
+              <p class="mb-1">
+                <strong>Author:</strong> {{ selectedTransaction.bookAuthor }}
+              </p>
+              <p class="mb-1">
+                <strong>Member:</strong>
+                {{ selectedTransaction.memberName }} ({{
+                  selectedTransaction.memberEmail
+                }})
+              </p>
+              <p class="mb-0">
+                <strong>Borrowed:</strong>
+                {{ selectedTransaction.borrowDate | date: "medium" }}
+              </p>
+              <p class="mb-0">
+                <strong>Due Date:</strong>
+                {{ selectedTransaction.dueDate | date: "medium" }}
+              </p>
             </div>
             <div class="col-md-5">
               <div class="status-info">
                 <div class="status-item">
                   <span class="status-label">Status</span>
-                  <span [class]="'badge ' + getTransactionStatusClass(selectedTransaction.status)">
-                    {{ selectedTransaction?.statusDisplay }}
+                  <span
+                    [class]="
+                      'badge ' +
+                      getTransactionStatusClass(selectedTransaction.status)
+                    "
+                  >
+                    {{ selectedTransaction.statusDisplay }}
                   </span>
                 </div>
                 <div class="status-item" *ngIf="selectedTransaction.isOverdue">
                   <span class="status-label">Days Overdue</span>
-                  <span class="status-value text-danger">{{ selectedTransaction?.daysOverdue }} days</span>
+                  <span class="status-value text-danger"
+                    >{{ selectedTransaction.daysOverdue }} days</span
+                  >
                 </div>
                 <div class="status-item">
                   <span class="status-label">Fine Amount</span>
                   <span class="status-value text-danger">
-                    ${{ fineAmount | number:'1.2-2' }}
+                    ${{ fineAmount | number: "1.2-2" }}
                   </span>
                 </div>
                 <div class="status-item">
@@ -113,25 +177,42 @@
         </div>
 
         <!-- Fine Warning -->
-        <div *ngIf="selectedTransaction && selectedTransaction.isOverdue" class="alert alert-danger">
+        <div
+          *ngIf="selectedTransaction && selectedTransaction.isOverdue"
+          class="alert alert-danger"
+        >
           <i class="fas fa-exclamation-triangle me-2"></i>
-          <strong>Warning:</strong> This book is overdue by {{ selectedTransaction?.daysOverdue }} days.
-          A fine of <strong>${{ fineAmount | number:'1.2-2' }}</strong> will be applied.
+          <strong>Warning:</strong> This book is overdue by
+          {{ selectedTransaction.daysOverdue }} days. A fine of
+          <strong>${{ fineAmount | number: "1.2-2" }}</strong> will be applied.
         </div>
 
         <!-- Form Actions -->
         <div class="d-flex justify-content-end gap-2 mt-4 pt-3 border-top">
-          <button type="button" class="btn btn-secondary" (click)="resetForm()" [disabled]="isSubmitting">
+          <button
+            type="button"
+            class="btn btn-secondary"
+            (click)="resetForm()"
+            [disabled]="isSubmitting"
+          >
             <i class="fas fa-undo"></i> Reset
           </button>
-          <button type="submit" class="btn btn-success" 
-                  [disabled]="returnForm.invalid || isSubmitting || !selectedTransaction">
+          <button
+            type="submit"
+            class="btn btn-success"
+            [disabled]="
+              returnForm.invalid || isSubmitting || !selectedTransaction
+            "
+          >
             <span *ngIf="!isSubmitting">
               <i class="fas fa-check"></i>
               Process Return
             </span>
             <span *ngIf="isSubmitting">
-              <span class="spinner-border spinner-border-sm me-2" role="status"></span>
+              <span
+                class="spinner-border spinner-border-sm me-2"
+                role="status"
+              ></span>
               Processing...
             </span>
           </button>

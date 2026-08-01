@@ -35,7 +35,8 @@
     margin-bottom: 0.25rem;
   }
 
-  .form-control, .form-select {
+  .form-control,
+  .form-select {
     border-radius: 8px;
     border: 1px solid #e2e8f0;
     padding: 0.625rem 1rem;
@@ -124,6 +125,16 @@
       background-color: #dcfce7;
       color: #166534;
     }
+
+    &.badge-dark {
+      background-color: #1e293b;
+      color: white;
+    }
+
+    &.badge-secondary {
+      background-color: #e2e8f0;
+      color: #475569;
+    }
   }
 
   .alert {
@@ -184,6 +195,10 @@
     margin-top: 0.25rem;
     display: block;
   }
+
+  .text-danger {
+    color: #ef4444;
+  }
 }
 
 @media (max-width: 768px) {
@@ -203,6 +218,11 @@
           padding: 0.25rem;
         }
       }
+    }
+
+    .btn {
+      padding: 0.4rem 1rem;
+      font-size: 0.875rem;
     }
   }
 }
